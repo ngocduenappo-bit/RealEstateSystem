@@ -1,0 +1,109 @@
+@model RealEstateSystem.Models.PropertySearchViewModel
+@{
+    ViewBag.Title = "Bất động sản";
+}
+
+<!-- Thanh lọc -->
+<div class="filter-bar py-3">
+    <div class="container">
+        @using (Html.BeginForm("Index", "Property", FormMethod.Get))
+        {
+            <div class="row g-2">
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        @Html.TextBoxFor(m => m.Keyword, new { @class = "form-control", placeholder = "Từ khóa: tiêu đề, địa chỉ..." })
+                    </div>
+                </div>
+                <div class="col-6 col-lg-2">
+                    @Html.DropDownListFor(m => m.TransactionTypeId, Model.TransactionTypeList, "Hình thức", new { @class = "form-select" })
+                </div>
+                <div class="col-6 col-lg-2">
+                    @Html.DropDownListFor(m => m.PropertyTypeId, Model.PropertyTypeList, "Loại hình", new { @class = "form-select" })
+                </div>
+                <div class="col-6 col-lg-2">
+                    @Html.DropDownListFor(m => m.City, Model.CityList, "Tỉnh/Thành", new { @class = "form-select" })
+                </div>
+                <div class="col-6 col-lg-2">
+                    @Html.TextBoxFor(m => m.District, new { @class = "form-control", placeholder = "Quận/Huyện" })
+                </div>
+            </div>
+            <div class="row g-2 mt-1">
+                <div class="col-6 col-lg-2">
+                    @Html.TextBoxFor(m => m.MinPrice, new { @class = "form-control price-input", type = "text", inputmode = "numeric", autocomplete = "off", placeholder = "Giá từ (VND)" })
+                </div>
+                <div class="col-6 col-lg-2">
+                    @Html.TextBoxFor(m => m.MaxPrice, new { @class = "form-control price-input", type = "text", inputmode = "numeric", autocomplete = "off", placeholder = "Giá đến (VND)" })
+                </div>
+                <div class="col-6 col-lg-2">
+                    @Html.TextBoxFor(m => m.MinArea, new { @class = "form-control num-input", type = "text", inputmode = "numeric", autocomplete = "off", placeholder = "Diện tích từ (m²)" })
+                </div>
+                <div class="col-6 col-lg-2">
+                    @Html.TextBoxFor(m => m.MaxArea, new { @class = "form-control num-input", type = "text", inputmode = "numeric", autocomplete = "off", placeholder = "Diện tích đến (m²)" })
+                </div>
+                <div class="col-6 col-lg-2">
+                    <select name="Bedrooms" class="form-select">
+                        <option value="">Phòng ngủ</option>
+                        @for (int n = 1; n <= 5; n++)
+                        {
+                            <option value="@n" @(Model.Bedrooms == n ? "selected" : "")>@(n)+ phòng ngủ</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-6 col-lg-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-brand flex-grow-1"><i class="bi bi-funnel"></i> Lọc</button>
+                    <a href="@Url.Action("Index", "Property")" class="btn btn-outline-secondary" title="Xóa bộ lọc"><i class="bi bi-x-lg"></i></a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Kết quả -->
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Tìm thấy <span class="text-brand">@Model.Paging.TotalItems</span> bất động sản</h5>
+    </div>
+
+    @if (Model.Results != null && Model.Results.Any())
+    {
+        foreach (var p in Model.Results)
+        {
+            @Html.Partial("_PropertyRow", p)
+        }
+        <div class="mt-4">
+            @Html.Partial("_Pagination", Model.Paging)
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">Không tìm thấy bất động sản phù hợp. Hãy thử thay đổi bộ lọc.</div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        (function () {
+            function fmt(v) {
+                var digits = (v || '').replace(/\D/g, '');
+                return digits ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+            }
+            var inputs = document.querySelectorAll('.num-input, .price-input');
+            inputs.forEach(function (el) {
+                el.value = fmt(el.value);
+                el.addEventListener('input', function () {
+                    var pos = el.selectionStart, before = el.value.length;
+                    el.value = fmt(el.value);
+                    var p = Math.max(0, pos + (el.value.length - before));
+                    el.setSelectionRange(p, p);
+                });
+            });
+            var form = inputs.length ? inputs[0].form : null;
+            if (form) {
+                form.addEventListener('submit', function () {
+                    inputs.forEach(function (el) { el.value = el.value.replace(/\./g, ''); });
+                });
+            }
+        })();
+    </script>
+}

@@ -1,0 +1,297 @@
+﻿@{
+    // Đổi tên thương hiệu ở đây nếu muốn
+    var brand = "ESTORA";
+
+    var ctrl = (ViewContext.RouteData.Values["controller"] ?? "").ToString();
+    var act = (ViewContext.RouteData.Values["action"] ?? "").ToString();
+    bool isHome = ctrl == "Home" && act == "Index";
+    bool isSearch = ctrl == "Property";
+    bool isContact = act == "Contact";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title - @brand</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <link href="~/Content/Site.css" rel="stylesheet" />
+    <style>
+        /* Giữ menu và nút bên phải trên cùng 1 hàng, không bị rớt dòng */
+        .site-header .main-nav .nav-link,
+        .nav-actions .btn {
+            white-space: nowrap;
+        }
+
+        @@media (min-width: 992px) {
+            .nav-actions {
+                flex-wrap: nowrap !important;
+                flex-shrink: 0;
+            }
+
+            .site-header .main-nav .nav-link {
+                margin-right: 1.5rem;
+            }
+        }
+
+        @@media (min-width: 992px) and (max-width: 1199.98px) {
+            .site-header .main-nav .nav-link {
+                margin-right: 1rem;
+            }
+
+            .brand {
+                margin-right: 1rem;
+            }
+
+            .brand-sub {
+                display: none;
+            }
+        }
+    </style>
+    @RenderSection("styles", required: false)
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <header class="site-header sticky-top">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="brand text-decoration-none" href="@Url.Action("Index", "Home", new { area = "" })">
+                    <span class="brand-mark"><i class="bi bi-bank2"></i></span>
+                    <span>
+                        <span class="brand-name">@brand</span>
+                        <span class="brand-sub">Real Estate System</span>
+                    </span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-label="Mở menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav main-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link @(isHome ? "active" : "")" href="@Url.Action("Index", "Home", new { area = "" })">Trang chủ</a></li>
+                        <li class="nav-item"><a class="nav-link @(isSearch ? "active" : "")" href="@Url.Action("Index", "Property", new { area = "" })">Mua bán &amp; Cho thuê</a></li>
+                        <li class="nav-item"><a class="nav-link" href="@(Url.Action("Index", "Home", new { area = "" }) + "#danh-muc")">Danh mục</a></li>
+                        <li class="nav-item"><a class="nav-link @(isContact ? "active" : "")" href="@Url.Action("Contact", "Home", new { area = "" })">Liên hệ</a></li>
+                        <li class="nav-item"><a class="nav-link @(act == "Saved" ? "active" : "")" href="@Url.Action("Saved", "Property", new { area = "" })"><i class="bi bi-heart"></i> Đã lưu <span id="savedCount" class="badge rounded-pill bg-danger d-none">0</span></a></li>
+                    </ul>
+
+                    <div class="nav-actions d-flex align-items-center gap-2 flex-wrap">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <div class="dropdown">
+                                <a class="btn btn-outline-brand dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    @if (User.IsInRole("admin"))
+                                    {
+                                        <li><a class="dropdown-item" href="@Url.Action("Index", "Admin")"><i class="bi bi-shield-check"></i> Trang quản trị</a></li>
+                                    }
+                                    <li><a class="dropdown-item" href="@Url.Action("Index", "Listing")"><i class="bi bi-house-door"></i> Tin của tôi</a></li>
+                                    <li><a class="dropdown-item" href="@Url.Action("Index", "Conversation")"><i class="bi bi-chat-dots"></i> Tin nhắn</a></li>
+                                    <li><a class="dropdown-item" href="@Url.Action("Profile", "Account")"><i class="bi bi-person-vcard"></i> Hồ sơ cá nhân</a></li>
+                                    <li><a class="dropdown-item" href="@Url.Action("ChangePassword", "Account")"><i class="bi bi-key"></i> Đổi mật khẩu</a></li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        @using (Html.BeginForm("Logout", "Account", new { area = "" }, FormMethod.Post, new { id = "logoutForm" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>
+                                        }
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="btn btn-ghost" href="@Url.Action("Login", "Account", new { area = "" })">Đăng nhập</a>
+                        }
+
+                        @if (User.IsInRole("user") || User.IsInRole("admin"))
+                        {
+                            <a class="btn btn-gold" href="@Url.Action("Create", "Listing")">
+                                <i class="bi bi-plus-circle-fill"></i> Đăng tin
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    @Html.Partial("_Alerts")
+
+    <main class="flex-grow-1">
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer mt-auto">
+        <div class="container">
+            <div class="row g-5 footer-top">
+                <div class="col-md-6 col-lg-3">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="footer-brand-mark"><i class="bi bi-bank2"></i></span>
+                        <span class="brand-name">@brand</span>
+                    </div>
+                    <p>Nền tảng công nghệ quản lý và tìm kiếm bất động sản hàng đầu Việt Nam. Mang lại không gian sống hoàn hảo và minh bạch cho mọi khách hàng.</p>
+                    <div class="d-flex gap-2 pt-2">
+                        <a href="#" class="social-btn" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="social-btn" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" class="social-btn" aria-label="Youtube"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                    <h4>Khám phá nhanh</h4>
+                    <ul>
+                        <li><a href="@Url.Action("Index", "Property", new { area = "" })">Căn hộ cao cấp</a></li>
+                        <li><a href="@Url.Action("Index", "Property", new { area = "" })">Biệt thự &amp; Villa</a></li>
+                        <li><a href="@Url.Action("Index", "Property", new { area = "" })">Nhà phố thương mại</a></li>
+                        <li><a href="@Url.Action("Index", "Property", new { area = "" })">Đất nền dự án</a></li>
+                        <li><a href="@Url.Action("Index", "Property", new { area = "" })">Văn phòng cho thuê</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                    <h4>Hỗ trợ khách hàng</h4>
+                    <ul>
+                        <li><a href="@Url.Action("Contact", "Home", new { area = "" })">Trung tâm hỗ trợ</a></li>
+                        <li><a href="#">Quy chế hoạt động sàn</a></li>
+                        <li><a href="#">Chính sách bảo mật thông tin</a></li>
+                        <li><a href="#">Giải quyết khiếu nại</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <h4>Liên hệ</h4>
+                    <ul class="footer-contact">
+                        <li><i class="bi bi-geo-alt-fill"></i><span>Tòa nhà ESTORA Tower, Đại lộ Mai Chí Thọ, Phường An Phú, TP. Thủ Đức, TP. Hồ Chí Minh</span></li>
+                        <li><i class="bi bi-telephone-fill"></i><span>Hotline: 1900 8686 99</span></li>
+                        <li><i class="bi bi-envelope-fill"></i><span>Email: support@estora.vn</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+                <span>&copy; @DateTime.Now.Year @brand Real Estate System. Đồ án môn học Web Application.</span>
+                <span>Thiết kế chuẩn mực - Hiện đại - Chuyên nghiệp</span>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .card-actions {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            display: flex;
+            gap: 6px;
+            z-index: 3;
+        }
+
+        .act-btn {
+            width: 36px;
+            height: 36px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,.92);
+            color: #1E3A5F;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,.25);
+        }
+
+            .act-btn:hover {
+                background: #fff;
+            }
+
+            .act-btn[data-save-id].on-state {
+                background: #dc3545;
+                color: #fff;
+            }
+
+        .btn[data-save-id].on-state {
+            background: #dc3545;
+            color: #fff;
+            border-color: #dc3545;
+        }
+    </style>
+
+    <script>
+        (function () {
+            var AUTH = @(User.Identity.IsAuthenticated ? "true" : "false");
+            var URL_LOGIN  = '@Url.Action("Login", "Account", new { area = "" })';
+            var URL_TOGGLE = '@Url.Action("ToggleSave", "Property", new { area = "" })';
+            var URL_IDS    = '@Url.Action("SavedIds", "Property", new { area = "" })';
+            var saved = [];
+
+            function refresh() {
+                document.querySelectorAll('[data-save-id]').forEach(function (b) {
+                    var on = saved.indexOf(Number(b.getAttribute('data-save-id'))) >= 0;
+                    b.classList.toggle('on-state', on);
+                    var i = b.querySelector('i');
+                    if (i) { i.classList.toggle('bi-heart-fill', on); i.classList.toggle('bi-heart', !on); }
+                    var l = b.querySelector('.lbl');
+                    if (l) l.textContent = on ? 'Đã lưu' : 'Lưu tin';
+                });
+                var badge = document.getElementById('savedCount');
+                if (badge) { badge.textContent = saved.length; badge.classList.toggle('d-none', saved.length === 0); }
+            }
+
+            function goLogin() {
+                location.href = URL_LOGIN + '?reason=save&returnUrl='
+                    + encodeURIComponent(location.pathname + location.search);
+            }
+
+            // Da dang nhap: lay danh sach tin da luu tu server de to mau trai tim
+            if (AUTH) {
+                fetch(URL_IDS, { credentials: 'same-origin' })
+                    .then(function (r) { return r.json(); })
+                    .then(function (a) { saved = a.map(Number); refresh(); })
+                    .catch(function () { });
+            }
+
+            document.addEventListener('click', function (e) {
+                var b = e.target.closest('[data-save-id]');
+                if (!b) return;
+                e.preventDefault(); e.stopPropagation();
+
+                if (!AUTH) { goLogin(); return; }   // chua dang nhap -> bat dang nhap
+
+                var id = Number(b.getAttribute('data-save-id'));
+                var tk = document.querySelector('input[name="__RequestVerificationToken"]');
+                var body = 'id=' + id + (tk ? '&__RequestVerificationToken=' + encodeURIComponent(tk.value) : '');
+
+                fetch(URL_TOGGLE, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: body
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    if (d.needLogin) { goLogin(); return; }
+                    if (!d.ok) return;
+                    var p = saved.indexOf(id);
+                    if (d.saved && p < 0) saved.push(id);
+                    if (!d.saved && p >= 0) saved.splice(p, 1);
+                    refresh();
+                    document.dispatchEvent(new CustomEvent('estora:saved', { detail: { id: id, saved: d.saved } }));
+                })
+                .catch(function () { });
+            });
+
+            window.Estora = { refresh: refresh };
+        })();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

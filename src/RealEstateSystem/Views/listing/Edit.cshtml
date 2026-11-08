@@ -1,0 +1,100 @@
+﻿@model RealEstateSystem.Models.ViewModels.ListingFormViewModel
+@{
+    ViewBag.Title = "Sửa tin đăng";
+    var existing = Model.ExistingImages ?? new List<RealEstateSystem.Models.PropertyImage>();
+}
+
+<div class="lf-page">
+    <div class="lf-hero">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="lf-hero-ico"><i class="bi bi-pencil-square"></i></span>
+                    <div>
+                        <h3>Sửa tin đăng</h3>
+                        <p>Cập nhật thông tin và hình ảnh của tin bất động sản</p>
+                    </div>
+                </div>
+                <a class="btn btn-back" href="@Url.Action("Index", "Listing")">
+                    <i class="bi bi-arrow-left"></i> Về danh sách
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container lf-body">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-9">
+
+                @* ===== Ảnh hiện có: mỗi nút là một form riêng, nên phải nằm NGOÀI form chính ===== *@
+                <div class="lf-card">
+                    <div class="lf-card-head">
+                        <span class="lf-ico"><i class="bi bi-image"></i></span>
+                        <div><h6>Ảnh hiện có (@existing.Count)</h6><small>Đặt ảnh đại diện hoặc xóa ảnh không cần dùng</small></div>
+                    </div>
+                    <div class="lf-card-body">
+                        @if (existing.Count == 0)
+                        {
+                            <p class="text-muted mb-0">Tin này chưa có ảnh. Hãy thêm ảnh ở phần "Hình ảnh" bên dưới.</p>
+                        }
+                        else
+                        {
+                            <div class="row g-3">
+                                @foreach (var img in existing)
+                                {
+                                    <div class="col-6 col-md-4">
+                                        <div class="p-2 h-100" style="border:1px solid #DCE5F0;border-radius:12px;background:#F5F8FC">
+                                            <div class="position-relative">
+                                                <img src="@Url.ImageSrc(img)" alt="Ảnh tin đăng"
+                                                     style="width:100%;height:130px;object-fit:cover;border-radius:8px" />
+                                                @if (img.IsPrimary)
+                                                {
+                                                    <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">
+                                                        <i class="bi bi-star-fill"></i> Ảnh đại diện
+                                                    </span>
+                                                }
+                                            </div>
+                                            <div class="d-flex gap-1 mt-2">
+                                                @if (!img.IsPrimary)
+                                                {
+                                                    using (Html.BeginForm("SetPrimaryImage", "Listing", new { id = img.PropertyImageId }, FormMethod.Post, new { @class = "flex-grow-1" }))
+                                                    {
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-outline-brand w-100">Đặt làm đại diện</button>
+                                                    }
+                                                }
+                                                @using (Html.BeginForm("DeleteImage", "Listing", new { id = img.PropertyImageId }, FormMethod.Post, new { onsubmit = "return confirm('Xóa ảnh này?');" }))
+                                                {
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa ảnh">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @* ===== Form chính ===== *@
+                @using (Html.BeginForm("Edit", "Listing", new { id = Model.PropertyId }, FormMethod.Post, new { enctype = "multipart/form-data" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Partial("_ListingFields", Model)
+
+                    <div class="lf-actions">
+                        <span class="note"><i class="bi bi-info-circle"></i> Ảnh mới chọn sẽ được thêm vào cùng các ảnh hiện có.</span>
+                        <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Listing")">Hủy</a>
+                        <button type="submit" class="btn btn-brand px-4">
+                            <i class="bi bi-save"></i> Lưu thay đổi
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

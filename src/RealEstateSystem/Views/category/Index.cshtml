@@ -1,0 +1,192 @@
+@model RealEstateSystem.Models.ViewModels.CategoryListViewModel
+@{
+    ViewBag.Title = "Quản lý danh mục";
+    bool isDistrict = Model.Type == "district";
+
+    // Cột "đang dùng" đếm theo bảng nào tùy loại danh mục
+    string usageUnit = Model.Type == "province" ? "quận/huyện" : "tin đăng";
+}
+
+@Html.Partial("_AdminStyles")
+
+<div class="ad-page">
+    <div class="ad-hero">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="ad-hero-ico"><i class="bi bi-tags"></i></span>
+                    <div>
+                        <h3>Quản lý danh mục</h3>
+                        <p>Loại bất động sản, hình thức giao dịch, khu vực, tiện ích, pháp lý và nội thất</p>
+                    </div>
+                </div>
+                <a class="btn btn-back" href="@Url.Action("Index", "Admin")"><i class="bi bi-arrow-left"></i> Trang quản trị</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container ad-body">
+
+        @* ===== Chọn loại danh mục ===== *@
+        <div class="ad-card">
+            <div class="ad-card-body py-3">
+                <ul class="nav nav-pills gap-1 flex-wrap">
+                    @foreach (var tab in Model.Tabs)
+                    {
+                        bool active = tab.Key == Model.Type;
+                        <li class="nav-item">
+                            <a class="nav-link @(active ? "active" : "")" style="@(active ? "background:var(--navy)" : "")"
+                               href="@Url.Action("Index", "Category", new { type = tab.Key })">@tab.Value</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        @* ===== Thêm mới ===== *@
+        <div class="ad-card">
+            <div class="ad-card-head">
+                <span class="ad-ico"><i class="bi bi-plus-circle"></i></span>
+                <div><h6>Thêm mới: @Model.Title</h6><small>Tên không được trùng với mục đã có</small></div>
+            </div>
+            <div class="ad-card-body">
+                @using (Html.BeginForm("Create", "Category", FormMethod.Post, new { @class = "row g-2 align-items-end" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="type" value="@Model.Type" />
+
+                    if (isDistrict)
+                    {
+                        <div class="col-md-4">
+                            <label class="form-label small mb-1">Tỉnh/Thành</label>
+                            <select name="provinceId" class="form-select" required>
+                                <option value="">-- Chọn tỉnh/thành --</option>
+                                @foreach (var pr in Model.ProvinceList)
+                                {
+                                    <option value="@pr.Value" selected="@(Model.ProvinceId.HasValue && Model.ProvinceId.Value.ToString() == pr.Value)">@pr.Text</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    <div class="col-md">
+                        <label class="form-label small mb-1">Tên</label>
+                        <input type="text" name="name" class="form-control" maxlength="100" required placeholder="Nhập tên @Model.Title.ToLower()..." />
+                    </div>
+                    <div class="col-md-auto">
+                        <button type="submit" class="btn btn-gold"><i class="bi bi-plus-lg"></i> Thêm</button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* ===== Danh sách ===== *@
+        <div class="ad-card">
+            <div class="ad-card-head">
+                <span class="ad-ico"><i class="bi bi-list-ul"></i></span>
+                <div><h6>@Model.Title</h6><small>@Model.Items.Count mục</small></div>
+
+                @if (isDistrict)
+                {
+                    <div class="ms-auto">
+                        @using (Html.BeginForm("Index", "Category", FormMethod.Get, new { @class = "d-flex gap-2" }))
+                        {
+                            <input type="hidden" name="type" value="district" />
+                            <select name="provinceId" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="">Tất cả tỉnh/thành</option>
+                                @foreach (var pr in Model.ProvinceList)
+                                {
+                                    <option value="@pr.Value" selected="@(Model.ProvinceId.HasValue && Model.ProvinceId.Value.ToString() == pr.Value)">@pr.Text</option>
+                                }
+                            </select>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (Model.Items.Count == 0)
+            {
+                <div class="text-center py-5">
+                    <div class="display-5 text-muted"><i class="bi bi-inbox"></i></div>
+                    <p class="text-muted mt-2 mb-0">Chưa có mục nào.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table ad-table align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width:60px">#</th>
+                                <th>Tên (sửa trực tiếp rồi nhấn lưu)</th>
+                                @if (isDistrict)
+                                {
+                                    <th>Tỉnh/Thành</th>
+                                }
+                                <th class="text-center">Đang dùng</th>
+                                <th class="text-end" style="width:90px">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ int stt = 0; }
+                            @foreach (var item in Model.Items)
+                            {
+                                stt++;
+                                <tr>
+                                    <td class="text-muted">@stt</td>
+                                    <td style="min-width:260px">
+                                        @using (Html.BeginForm("Update", "Category", FormMethod.Post, new { @class = "d-flex gap-2" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="type" value="@Model.Type" />
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            if (Model.ProvinceId.HasValue)
+                                            {
+                                                <input type="hidden" name="provinceId" value="@Model.ProvinceId.Value" />
+                                            }
+                                            <input type="text" name="name" value="@item.Name" class="form-control form-control-sm" maxlength="100" required />
+                                            <button type="submit" class="btn btn-sm btn-outline-brand" title="Lưu"><i class="bi bi-check-lg"></i></button>
+                                        }
+                                    </td>
+                                    @if (isDistrict)
+                                    {
+                                        <td>@item.ParentName</td>
+                                    }
+                                    <td class="text-center">
+                                        @if (item.UsageCount > 0)
+                                        {
+                                            <span class="badge bg-secondary-subtle text-secondary-emphasis">@item.UsageCount @usageUnit</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">Chưa dùng</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        @if (item.UsageCount > 0)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Đang được sử dụng, không thể xóa"><i class="bi bi-trash"></i></button>
+                                        }
+                                        else
+                                        {
+                                            using (Html.BeginForm("Delete", "Category", FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Xóa mục này?');" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="type" value="@Model.Type" />
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                if (Model.ProvinceId.HasValue)
+                                                {
+                                                    <input type="hidden" name="provinceId" value="@Model.ProvinceId.Value" />
+                                                }
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

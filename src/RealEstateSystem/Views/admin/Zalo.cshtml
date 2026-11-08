@@ -1,0 +1,182 @@
+﻿@model RealEstateSystem.Models.ViewModels.AdminZaloListViewModel
+@using RealEstateSystem.Helpers
+@{
+    ViewBag.Title = "Lượt bấm Zalo";
+    bool filtering = !string.IsNullOrWhiteSpace(Model.Keyword) || Model.AgentId.HasValue;
+    var tabs = new[]
+    {
+        new { Status = "", Text = "Tất cả", Count = Model.NewCount + Model.RepliedCount },
+        new { Status = "New", Text = "Mới", Count = Model.NewCount },
+        new { Status = "Replied", Text = "Đã phản hồi", Count = Model.RepliedCount }
+    };
+    var tiles = new[]
+    {
+        new { Icon = "bi-hand-index-thumb", Num = Model.TotalClicks, Label = "Tổng lượt bấm" },
+        new { Icon = "bi-calendar-day", Num = Model.TodayClicks, Label = "Hôm nay" },
+        new { Icon = "bi-calendar-week", Num = Model.Last7DaysClicks, Label = "7 ngày qua" },
+        new { Icon = "bi-building", Num = Model.PropertiesWithClicks, Label = "Tin có lượt bấm" }
+    };
+}
+
+@Html.Partial("_AdminStyles")
+
+<style>
+    .stat-tile {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.1rem 1.25rem;
+        height: 100%;
+    }
+
+        .stat-tile .num {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--navy);
+            line-height: 1;
+        }
+
+        .stat-tile .lbl {
+            color: var(--muted);
+            font-size: .85rem;
+            margin-top: .25rem;
+        }
+</style>
+
+<div class="ad-page">
+    <div class="ad-hero">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="ad-hero-ico"><i class="bi bi-inbox"></i></span>
+                    <div>
+                        <h3>Yêu cầu của khách</h3>
+                        <p>Theo dõi lượt khách bấm nút liên hệ Zalo trên các tin đăng</p>
+                    </div>
+                </div>
+                <a class="btn btn-back" href="@Url.Action("Index", "Admin")"><i class="bi bi-arrow-left"></i> Trang quản trị</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container ad-body">
+
+        @* ===== Thống kê ===== *@
+        <div class="row g-3 mb-3">
+            @foreach (var t in tiles)
+            {
+                <div class="col-6 col-lg-3">
+                    <div class="ad-card mb-0 h-100">
+                        <div class="stat-tile">
+                            <span class="ad-ico"><i class="bi @t.Icon"></i></span>
+                            <div>
+                                <div class="num">@t.Num.ToString("N0")</div>
+                                <div class="lbl">@t.Label</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* ===== Tab + lọc ===== *@
+        <div class="ad-card">
+            <div class="ad-card-body py-3">
+                <ul class="nav nav-pills mb-3 gap-1">
+                    @foreach (var t in tabs)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Inquiries", "Admin", new { status = t.Status })">
+                                @t.Text <span class="badge bg-light text-dark ms-1">@t.Count</span>
+                            </a>
+                        </li>
+                    }
+                    <li class="nav-item">
+                        <a class="nav-link active" style="background:var(--navy)" href="@Url.Action("Zalo", "Admin")">
+                            <i class="bi bi-chat-dots"></i> Zalo <span class="badge bg-light text-dark ms-1">@Model.ZaloCount</span>
+                        </a>
+                    </li>
+                </ul>
+
+                @using (Html.BeginForm("Zalo", "Admin", FormMethod.Get, new { @class = "row g-2 align-items-center" }))
+                {
+                    <div class="col-md">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" name="keyword" maxlength="100" value="@Model.Keyword" class="form-control" placeholder="Tìm theo tiêu đề tin, môi giới hoặc khu vực..." />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="agentId" class="form-select" onchange="this.form.submit()">
+                            <option value="">Tất cả môi giới</option>
+                            @foreach (var a in Model.AgentList)
+                            {
+                                <option value="@a.Value" selected="@(Model.AgentId.HasValue && Model.AgentId.Value.ToString() == a.Value)">@a.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-auto d-flex gap-2">
+                        <button type="submit" class="btn btn-brand"><i class="bi bi-search"></i> Tìm kiếm</button>
+                        @if (filtering)
+                        {
+                            <a class="btn btn-outline-secondary" href="@Url.Action("Zalo", "Admin")">Xóa lọc</a>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* ===== Danh sách ===== *@
+        <div class="ad-card">
+            <div class="ad-card-head">
+                <span class="ad-ico"><i class="bi bi-list-ul"></i></span>
+                <div><h6>Danh sách lượt bấm Zalo</h6><small>Tổng cộng @Model.Paging.TotalItems lượt</small></div>
+            </div>
+
+            @if (Model.Rows.Count == 0)
+            {
+                <div class="text-center py-5">
+                    <div class="display-5 text-muted"><i class="bi bi-chat-dots"></i></div>
+                    <p class="text-muted mt-2 mb-0">@(filtering ? "Không có lượt bấm nào phù hợp." : "Chưa có lượt bấm Zalo nào.")</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table ad-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Tin đăng</th>
+                                <th>Môi giới</th>
+                                <th>Thời gian bấm</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model.Rows)
+                            {
+                                <tr>
+                                    <td style="min-width:280px">
+                                        <a class="fw-semibold text-decoration-none" href="@Url.Action("Details", "Property", new { id = r.PropertyId, area = "" })">@r.PropertyTitle</a>
+                                        <div class="small text-muted"><i class="bi bi-geo-alt"></i> @r.Location</div>
+                                    </td>
+                                    <td>@r.AgentName</td>
+                                    <td class="text-nowrap">
+                                        @r.ClickedAt.ToString("dd/MM/yyyy HH:mm")
+                                        <div class="small text-muted">@r.ClickedAt.TimeAgo()</div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                if (Model.Paging.TotalPages > 1)
+                {
+                    <div class="ad-card-foot">
+                        @Html.Partial("_Pagination", Model.Paging)
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

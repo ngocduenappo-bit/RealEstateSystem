@@ -1,0 +1,253 @@
+﻿<style>
+    /* ===== Giao diện chung cho các trang quản trị (navy + champagne) ===== */
+    .ad-page {
+        background: linear-gradient(180deg, #E8EFF8 0, #F3F6FB 380px, #F7F8FA 100%);
+        padding-bottom: 2rem;
+    }
+
+    .ad-hero {
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        padding: 2.25rem 0 5rem;
+        background: linear-gradient(120deg, var(--navy-dark) 0%, var(--navy) 55%, var(--navy-light) 100%);
+    }
+
+        .ad-hero::before {
+            content: "";
+            position: absolute;
+            right: -60px;
+            top: -80px;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: rgba(212,168,83,.22);
+        }
+
+        .ad-hero::after {
+            content: "";
+            position: absolute;
+            right: 140px;
+            bottom: -110px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.07);
+        }
+
+        .ad-hero .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .ad-hero h3 {
+            color: #fff;
+            margin: 0;
+        }
+
+        .ad-hero p {
+            color: rgba(255,255,255,.78);
+            margin: .35rem 0 0;
+        }
+
+    .ad-hero-ico {
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        font-size: 1.6rem;
+        background: var(--gold);
+        color: #fff;
+        box-shadow: 0 8px 20px rgba(0,0,0,.25);
+        flex-shrink: 0;
+    }
+
+    .ad-hero .btn-back {
+        color: #fff;
+        border: 1px solid rgba(255,255,255,.45);
+        background: rgba(255,255,255,.08);
+    }
+
+        .ad-hero .btn-back:hover {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+        }
+
+    .ad-body {
+        margin-top: -3rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .ad-card {
+        background: #fff;
+        border: 1px solid #DCE5F0;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(30,58,95,.08);
+        margin-bottom: 1.25rem;
+    }
+
+    .ad-card-head {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: .85rem 1.5rem;
+        background: linear-gradient(90deg, #EDF2FA 0%, #F8FAFD 100%);
+        border-bottom: 1px solid #DCE5F0;
+    }
+
+        .ad-card-head h6 {
+            margin: 0;
+            color: var(--navy);
+            font-weight: 600;
+        }
+
+        .ad-card-head small {
+            color: var(--muted);
+        }
+
+    .ad-ico {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-size: 1.1rem;
+        background: rgba(212,168,83,.2);
+        color: var(--gold-dark);
+        flex-shrink: 0;
+    }
+
+    .ad-card-body {
+        padding: 1.5rem;
+    }
+
+    .ad-card-foot {
+        padding: .9rem 1.5rem;
+        background: #F8FAFD;
+        border-top: 1px solid #DCE5F0;
+    }
+
+    .ad-card .form-control, .ad-card .form-select, .ad-card .input-group-text {
+        background-color: #F5F8FC;
+        border-color: #D3DDEA;
+        border-radius: 10px;
+    }
+
+    .ad-card .input-group > .form-control {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .ad-card .input-group > .input-group-text:first-child {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .ad-card .input-group > .form-control:not(:first-child) {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .ad-card .input-group > .btn:last-child {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .ad-card .input-group-text {
+        color: var(--navy);
+        font-weight: 600;
+    }
+
+    .ad-card .form-control:focus, .ad-card .form-select:focus {
+        background-color: #fff;
+        border-color: var(--gold);
+        box-shadow: 0 0 0 .22rem rgba(212,168,83,.25);
+    }
+
+    .ad-card .form-control:disabled, .ad-card .form-select:disabled {
+        background-color: #E9EEF5;
+        color: #6B7280;
+    }
+
+    .ad-card .input-validation-error {
+        border-color: var(--danger) !important;
+        background-color: #FDF3F3 !important;
+    }
+
+    .ad-table {
+        margin: 0;
+    }
+
+        .ad-table thead th {
+            background: #EDF2FA;
+            color: var(--navy);
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            border-bottom: 1px solid #DCE5F0;
+            white-space: nowrap;
+            padding: .8rem 1rem;
+        }
+
+        .ad-table tbody td {
+            padding: .85rem 1rem;
+            border-color: #EEF2F7;
+        }
+
+        .ad-table tbody tr:hover {
+            background: #F7FAFE;
+        }
+
+    .ad-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        font-weight: 700;
+        color: #fff;
+        background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    }
+
+        .ad-avatar.is-admin {
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+        }
+
+    .ad-actions {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        flex-wrap: wrap;
+        padding: .85rem 1.25rem;
+        margin-top: 1.25rem;
+        background: rgba(255,255,255,.94);
+        backdrop-filter: blur(8px);
+        border: 1px solid #DCE5F0;
+        border-radius: 14px;
+        box-shadow: 0 -6px 24px rgba(30,58,95,.12);
+    }
+
+        .ad-actions .note {
+            color: var(--muted);
+            font-size: .85rem;
+            margin-right: auto;
+        }
+
+    .ad-page .page-link {
+        color: var(--navy);
+        border-color: #DCE5F0;
+    }
+
+    .ad-page .page-item.active .page-link {
+        background: var(--navy);
+        border-color: var(--navy);
+        color: #fff;
+    }
+</style>

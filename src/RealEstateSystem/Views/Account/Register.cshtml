@@ -1,0 +1,99 @@
+﻿@model RealEstateSystem.Models.RegisterViewModel
+@{
+    // Controller truyền ViewBag.IsAdminCreating = true khi admin đang đăng nhập và tạo tài khoản hộ người khác
+    bool isAdminCreating = ViewBag.IsAdminCreating != null && (bool)ViewBag.IsAdminCreating;
+
+    ViewBag.Title = isAdminCreating ? "Tạo tài khoản" : "Đăng ký";
+}
+
+<div class="auth-grid">
+
+    <!-- Cột trái: ảnh + giới thiệu -->
+    <div class="auth-side">
+        <div class="auth-side-bg" style="background-image: url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80');"></div>
+        <div class="auth-side-overlay"></div>
+
+        <div class="auth-side-content d-flex align-items-center gap-3">
+            <span class="footer-brand-mark"><i class="bi bi-bank2"></i></span>
+            <span class="brand-name" style="color: #fff;">ESTORA</span>
+        </div>
+
+        <div class="auth-side-content" style="max-width: 32rem;">
+            <span class="hero-pill">Hệ thống quản lý BĐS</span>
+            <h2>Bắt đầu đăng tin và kết nối khách hàng ngay hôm nay.</h2>
+            <p class="auth-side-text">
+                Tạo tài khoản để đăng tin bất động sản, quản lý tin của bạn và trao đổi trực tiếp với người quan tâm.
+            </p>
+        </div>
+
+        <div class="auth-side-content small" style="color: #94A3B8;">
+            &copy; @DateTime.Now.Year ESTORA Real Estate System. All rights reserved.
+        </div>
+    </div>
+
+    <!-- Cột phải: form đăng ký -->
+    <div class="auth-main">
+        <div class="auth-box">
+            <div class="text-center mb-4">
+                <h1 class="h2 mb-2">@(isAdminCreating ? "Tạo tài khoản mới" : "Đăng ký tài khoản mới")</h1>
+                <p class="text-muted small mb-0">
+                    @(isAdminCreating
+                        ? "Tạo tài khoản hộ người dùng. Bạn vẫn giữ nguyên phiên đăng nhập hiện tại."
+                        : "Đăng ký để đăng tin và liên hệ với môi giới")
+                </p>
+            </div>
+
+            @if (!isAdminCreating)
+            {
+                <div class="auth-tabs mb-4">
+                    <a class="auth-tab" href="@Url.Action("Login", "Account", new { area = "" })">Đăng nhập</a>
+                    <span class="auth-tab active">Đăng ký</span>
+                </div>
+            }
+
+            @using (Html.BeginForm("Register", "Account", new { area = "" }, FormMethod.Post, new { @class = "d-grid gap-3" }))
+            {
+                @Html.AntiForgeryToken()
+
+                if (ViewData.ModelState.ContainsKey("") && ViewData.ModelState[""].Errors.Count > 0)
+                {
+                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger py-2 mb-0" })
+                }
+
+                <div>
+                    @Html.LabelFor(m => m.FullName, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", autofocus = "autofocus", placeholder = "Nguyễn Văn A" })
+                    @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger small" })
+                </div>
+
+                <div>
+                    @Html.LabelFor(m => m.Email, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", placeholder = "ten@example.com" })
+                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small" })
+                </div>
+
+                <div>
+                    @Html.LabelFor(m => m.Phone, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", type = "tel", maxlength = "10", placeholder = "0901234567" })
+                    @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger small" })
+                </div>
+
+                <div>
+                    @Html.LabelFor(m => m.Password, new { @class = "form-label" })
+                    @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Tối thiểu 6 ký tự" })
+                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
+                </div>
+
+                <div>
+                    @Html.LabelFor(m => m.ConfirmPassword, new { @class = "form-label" })
+                    @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "Nhập lại mật khẩu" })
+                    @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger small" })
+                </div>
+
+                <button type="submit" class="btn btn-brand py-2">
+                    <i class="bi bi-person-check"></i> @(isAdminCreating ? "Tạo tài khoản" : "Đăng ký tài khoản")
+                </button>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,145 @@
+﻿@model RealEstateSystem.Models.ViewModels.AdminStatsViewModel
+@{
+    ViewBag.Title = "Thống kê";
+    int maxViews = Model.TopViewed.Count > 0 ? Model.TopViewed.Max(t => t.Views) : 1;
+    if (maxViews < 1) { maxViews = 1; }
+}
+
+@Html.Partial("_AdminStyles")
+
+<style>
+    .stat-tile { display: flex; align-items: center; gap: 1rem; padding: 1.1rem 1.25rem; height: 100%; }
+    .stat-tile .num { font-size: 1.75rem; font-weight: 700; color: var(--navy); line-height: 1; }
+    .stat-tile .lbl { color: var(--muted); font-size: .85rem; margin-top: .25rem; }
+    .chart-wrap { position: relative; height: 270px; }
+    .chart-empty { height: 270px; display: flex; align-items: center; justify-content: center; color: #8a97a8; }
+</style>
+
+<div class="ad-page">
+    <div class="ad-hero">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="ad-hero-ico"><i class="bi bi-bar-chart-line"></i></span>
+                    <div>
+                        <h3>Thống kê</h3>
+                        <p>Tin đăng theo danh mục, lượng yêu cầu, khu vực phổ biến và lượt xem</p>
+                    </div>
+                </div>
+                <a class="btn btn-back" href="@Url.Action("Index", "Admin")"><i class="bi bi-arrow-left"></i> Trang quản trị</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container ad-body">
+
+        @* ===== Khu vực phổ biến ===== *@
+        <div class="ad-card">
+            <div class="ad-card-head"><span class="ad-ico"><i class="bi bi-geo-alt"></i></span><div><h6>Khu vực phổ biến</h6><small>8 quận/huyện có nhiều tin đăng nhất</small></div></div>
+            <div class="ad-card-body">
+                @if (Model.TopLocations.Count == 0)
+                {
+                    <div class="chart-empty">Chưa có dữ liệu</div>
+                }
+                else
+                {
+                    <div class="row g-3 align-items-center">
+                        <div class="col-lg-6"><div class="chart-wrap"><canvas id="chLoc"></canvas></div></div>
+                        <div class="col-lg-6">
+                            <div class="table-responsive">
+                                <table class="table ad-table align-middle mb-0">
+                                    <thead><tr><th>Khu vực</th><th class="text-center">Số tin</th><th class="text-center">Lượt xem</th></tr></thead>
+                                    <tbody>
+                                        @foreach (var l in Model.TopLocations)
+                                        {
+                                            <tr><td>@l.Label</td><td class="text-center">@l.Value</td><td class="text-center">@l.Value2.ToString("N0")</td></tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* ===== Tin xem nhiều nhất ===== *@
+        <div class="ad-card">
+            <div class="ad-card-head"><span class="ad-ico"><i class="bi bi-fire"></i></span><div><h6>Tin được xem nhiều nhất</h6><small>Top 10 theo lượt xem</small></div></div>
+            @if (Model.TopViewed.Count == 0)
+            {
+                <div class="chart-empty">Chưa có dữ liệu</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table ad-table align-middle">
+                        <thead>
+                            <tr><th style="width:50px">#</th><th>Tin đăng</th><th>Trạng thái</th><th style="min-width:200px">Lượt xem</th><th class="text-center">Yêu cầu</th></tr>
+                        </thead>
+                        <tbody>
+                            @{ int rank = 0; }
+                            @foreach (var t in Model.TopViewed)
+                            {
+                                rank++;
+                                <tr>
+                                    <td class="text-muted">@rank</td>
+                                    <td style="min-width:260px">
+                                        <a class="fw-semibold text-decoration-none" target="_blank" href="@Url.Action("Details", "Property", new { id = t.PropertyId })">@t.Title</a>
+                                        <div class="small text-muted">@t.Location</div>
+                                    </td>
+                                    <td class="small">@t.Status</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="progress flex-grow-1" style="height:8px">
+                                                <div class="progress-bar" style="width:@((int)(t.Views * 100.0 / maxViews))%; background:var(--navy)"></div>
+                                            </div>
+                                            <span class="small fw-semibold">@t.Views.ToString("N0")</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">@t.Inquiries</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            var colors = ['#1E3A5F', '#C9A24B', '#2F80ED', '#27AE60', '#EB5757', '#9B51E0', '#F2994A', '#56CCF2'];
+
+            function el(id) { return document.getElementById(id); }
+
+            function doughnut(id, labels, data) {
+                if (!el(id)) return;
+                new Chart(el(id), {
+                    type: 'doughnut',
+                    data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 2 }] },
+                    options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                });
+            }
+
+            function bars(id, labels, data, label, horizontal) {
+                if (!el(id)) return;
+                new Chart(el(id), {
+                    type: 'bar',
+                    data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: '#1E3A5F', borderRadius: 4 }] },
+                    options: {
+                        indexAxis: horizontal ? 'y' : 'x',
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { beginAtZero: true, ticks: { precision: 0 } }, y: { beginAtZero: true, ticks: { precision: 0 } } }
+                    }
+                });
+            }
+          
+            bars('chLoc', @Html.Raw(Json.Encode(Model.TopLocations.Select(x => x.Label))), @Html.Raw(Json.Encode(Model.TopLocations.Select(x => x.Value))), 'Số tin', true);
+        })();
+    </script>
+}

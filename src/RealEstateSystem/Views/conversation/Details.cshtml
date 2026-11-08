@@ -1,0 +1,105 @@
+﻿@model RealEstateSystem.Models.ViewModels.ConversationDetailViewModel
+@using RealEstateSystem.Helpers
+@{
+    ViewBag.Title = "Trao đổi: " + Model.PropertyTitle;
+}
+
+<style>
+    .chat-box { max-height: 60vh; overflow-y: auto; padding: 1.25rem; background: #F5F8FC; }
+    .chat-row { display: flex; margin-bottom: 1rem; }
+    .chat-row.mine { justify-content: flex-end; }
+    .chat-bubble { max-width: 75%; padding: .65rem .95rem; border-radius: 14px; background: #fff; border: 1px solid #DCE5F0; }
+    .chat-row.mine .chat-bubble { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .chat-bubble .who { font-size: .75rem; opacity: .75; margin-bottom: .15rem; }
+    .chat-bubble .txt { white-space: pre-wrap; word-break: break-word; }
+    .chat-bubble .when { font-size: .7rem; opacity: .65; margin-top: .25rem; text-align: right; }
+</style>
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Conversation")">Tin nhắn</a></li>
+            <li class="breadcrumb-item active">@Model.PropertyTitle</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2 py-3">
+            <div>
+                <div class="fw-bold">
+                    @if (Model.PropertyId.HasValue)
+                    {
+                        <a class="text-decoration-none" href="@Url.Action("Details", "Property", new { id = Model.PropertyId.Value })">
+                            <i class="bi bi-house-door"></i> @Model.PropertyTitle
+                        </a>
+                    }
+                    else
+                    {
+                        <span><i class="bi bi-chat-dots"></i> @Model.PropertyTitle</span>
+                    }
+                </div>
+                <div class="small text-muted">
+                    <i class="bi bi-person"></i> @(Model.IsAgent ? "Người liên hệ" : "Người nhận"): @Model.OtherUserName
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge @ViewHelper.ConversationStatusBadge(Model.Status)">@ViewHelper.ConversationStatusText(Model.Status)</span>
+                @if (Model.IsAgent)
+                {
+                    using (Html.BeginForm("SetStatus", "Conversation", new { id = Model.ConversationId, status = Model.Status == "New" ? "Replied" : "New" }, FormMethod.Post, new { @class = "d-inline" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm @(Model.Status == "New" ? "btn-outline-success" : "btn-outline-secondary")">
+                            @(Model.Status == "New" ? "Đánh dấu đã phản hồi" : "Đánh dấu là mới")
+                        </button>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="chat-box" id="chatBox">
+            @if (Model.Messages == null || Model.Messages.Count == 0)
+            {
+                <p class="text-center text-muted my-4">Chưa có tin nhắn nào.</p>
+            }
+            else
+            {
+                foreach (var m in Model.Messages)
+                {
+                    <div class="chat-row @(m.IsMine ? "mine" : "")">
+                        <div class="chat-bubble">
+                            <div class="who">@(m.IsMine ? "Bạn" : m.SenderName)</div>
+                            <div class="txt">@m.Content</div>
+                            <div class="when">@m.CreatedAt.ToString("HH:mm dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="card-footer bg-white py-3">
+            @using (Html.BeginForm("Reply", "Conversation", new { id = Model.ConversationId }, FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <div class="d-flex gap-2 align-items-end">
+                    <textarea name="content" class="form-control" rows="2" maxlength="2000" required
+                              placeholder="@(Model.IsAgent ? "Nhập nội dung phản hồi khách..." : "Nhập tin nhắn...")"></textarea>
+                    <button type="submit" class="btn btn-brand flex-shrink-0"><i class="bi bi-send"></i> Gửi</button>
+                </div>
+                if (Model.IsAgent && Model.Status == "New")
+                {
+                    <div class="small text-muted mt-2"><i class="bi bi-info-circle"></i> Gửi phản hồi sẽ chuyển trạng thái sang "Đã phản hồi".</div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    // Cuộn tới tin nhắn mới nhất khi mở trang
+    (function () {
+        var box = document.getElementById('chatBox');
+        if (box) box.scrollTop = box.scrollHeight;
+    })();
+</script>

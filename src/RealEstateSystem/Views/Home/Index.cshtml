@@ -1,0 +1,170 @@
+﻿@model RealEstateSystem.Models.HomeViewModel
+@{
+    ViewBag.Title = "Trang chủ";
+
+    // Chọn icon theo tên loại hình
+    Func<string, string> typeIcon = delegate (string name)
+    {
+        var n = (name ?? "").ToLower();
+        if (n.Contains("căn hộ") || n.Contains("chung cư")) { return "bi-building"; }
+        if (n.Contains("biệt thự") || n.Contains("villa")) { return "bi-house-heart"; }
+        if (n.Contains("đất")) { return "bi-tree"; }
+        if (n.Contains("văn phòng")) { return "bi-briefcase"; }
+        if (n.Contains("cửa hàng") || n.Contains("mặt bằng") || n.Contains("thương mại")) { return "bi-shop"; }
+        if (n.Contains("kho") || n.Contains("xưởng")) { return "bi-box-seam"; }
+        return "bi-house-door";
+    };
+}
+
+<!-- Hero + tìm kiếm -->
+<section class="hero">
+    <div class="hero-bg" style="background-image: url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80');"></div>
+    <div class="hero-overlay"></div>
+
+    <div class="container">
+        <div style="max-width: 48rem;">
+            <span class="hero-pill">Nền tảng Bất động sản Cao cấp</span>
+            <h1>Tìm kiếm không gian sống phù hợp với bạn</h1>
+            <p class="hero-lead">Khám phá những bất động sản phù hợp với nhu cầu của bạn.</p>
+        </div>
+
+        <div class="search-box">
+            @using (Html.BeginForm("Index", "Property", FormMethod.Get))
+            {
+                <div class="row g-3 align-items-end">
+                    <div class="col-sm-6 col-lg">
+                        <label class="field-label">Giao dịch</label>
+                        <select name="TransactionTypeId" class="form-select">
+                            <option value="">Tất cả giao dịch</option>
+                            @foreach (var t in Model.TransactionSummaries)
+                            {
+                                <option value="@t.Id">@Web.Helpers.ViewHelper.TransactionLabel(t.Name) (@t.Count tin)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-lg">
+                        <label class="field-label">Loại BĐS</label>
+                        @Html.DropDownList("PropertyTypeId", Model.PropertyTypeList, "Tất cả loại hình", new { @class = "form-select" })
+                    </div>
+                    <div class="col-sm-6 col-lg">
+                        <label class="field-label">Khu vực</label>
+                        <select name="City" class="form-select">
+                            <option value="">Tất cả khu vực</option>
+                            @foreach (var c in Model.CitySummaries)
+                            {
+                                <option value="@c.City">@c.City</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-lg">
+                        <label class="field-label">Từ khóa</label>
+                        <input type="text" name="Keyword" class="form-control" placeholder="Tên, địa chỉ..." />
+                    </div>
+                    <div class="col-12 col-lg-auto">
+                        <button type="submit" class="btn btn-brand w-100 py-2">
+                            <i class="bi bi-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Tin nổi bật -->
+<section class="section container">
+    <div class="section-head">
+        <div>
+            <span class="eyebrow">Đề xuất hàng đầu</span>
+            <h2 class="section-heading">Bất động sản nổi bật</h2>
+        </div>
+        <a href="@Url.Action("Index", "Property")" class="link-more">
+            Xem tất cả bất động sản <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+
+    @if (Model.FeaturedProperties != null && Model.FeaturedProperties.Any())
+    {
+        <div class="card-grid">
+            @foreach (var p in Model.FeaturedProperties)
+            {
+                @Html.Partial("_PropertyCard", p)
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">Chưa có tin nổi bật.</div>
+    }
+</section>
+
+<!-- Khám phá theo loại hình -->
+<section class="section section-white" id="danh-muc">
+    <div class="container">
+        <div class="text-center mx-auto mb-5" style="max-width: 42rem;">
+            <span class="eyebrow">Danh mục đa dạng</span>
+            <h2 class="section-heading">Khám phá theo loại hình</h2>
+            <p class="text-muted small mt-2 mb-0">Lựa chọn loại hình bất động sản phù hợp với phong cách sống và mục tiêu đầu tư của bạn.</p>
+        </div>
+
+        <div class="cat-grid">
+            @foreach (var t in Model.PropertyTypeSummaries)
+            {
+                <a class="cat-tile" href="@Url.Action("Index", "Property", new { propertyTypeId = t.Id })">
+                    <div class="cat-icon"><i class="bi @typeIcon(t.Name)"></i></div>
+                    <h3 class="cat-name">@t.Name</h3>
+                    <p class="cat-count mb-0">@t.Count tin đăng</p>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Bất động sản theo khu vực -->
+@if (Model.CitySummaries != null && Model.CitySummaries.Any())
+{
+    <section class="section container">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">Mọi khu vực</span>
+                <h2 class="section-heading">Bất động sản theo khu vực</h2>
+            </div>
+        </div>
+
+        <div class="city-grid">
+            @foreach (var c in Model.CitySummaries)
+            {
+                <a class="city-tile" href="@Url.Action("Index", "Property", new { city = c.City })">
+                    <span class="city-icon"><i class="bi bi-geo-alt-fill"></i></span>
+                    <span>
+                        <span class="city-name">@c.City</span>
+                        <span class="city-count">@c.Count tin đăng</span>
+                    </span>
+                </a>
+            }
+        </div>
+    </section>
+}
+
+<!-- Tin mới đăng -->
+@if (Model.LatestProperties != null && Model.LatestProperties.Any())
+{
+    <section class="section container pt-0">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">Mới cập nhật</span>
+                <h2 class="section-heading">Bất động sản mới nhất</h2>
+            </div>
+            <a href="@Url.Action("Index", "Property")" class="link-more">
+                Khám phá thêm <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="card-grid">
+            @foreach (var p in Model.LatestProperties)
+            {
+                @Html.Partial("_PropertyCard", p)
+            }
+        </div>
+    </section>
+}

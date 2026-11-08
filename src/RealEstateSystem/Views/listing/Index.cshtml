@@ -1,0 +1,137 @@
+﻿@model List<RealEstateSystem.Models.Property>
+@{
+    ViewBag.Title = "Tin của tôi";
+    var isAdmin = User.IsInRole("admin");
+}
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h3 class="mb-0">Tin của tôi</h3>
+            <small class="text-muted">Quản lý các tin bất động sản bạn đã đăng (@Model.Count tin)</small>
+        </div>
+        <a class="btn btn-brand" href="@Url.Action("Create", "Listing")">
+            <i class="bi bi-plus-circle"></i> Đăng tin mới
+        </a>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="display-4 text-muted"><i class="bi bi-house-add"></i></div>
+                <h5 class="mt-3">Bạn chưa đăng tin nào</h5>
+                <p class="text-muted mb-4">Đăng tin đầu tiên để khách hàng có thể tìm thấy và liên hệ với bạn.</p>
+                <a class="btn btn-brand" href="@Url.Action("Create", "Listing")">Đăng tin ngay</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:110px">Ảnh</th>
+                            <th>Tin đăng</th>
+                            @if (isAdmin)
+                            {
+                                <th>Tài khoản được gán</th>
+                            }
+                            <th>Giá</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end" style="width:230px">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <img src="@p.PrimaryImageUrl(Url)" alt="@p.Title"
+                                         style="width:96px;height:72px;object-fit:cover;border-radius:6px" />
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">@p.Title</div>
+                                    <div class="small text-muted">
+                                        @if (p.TransactionType != null)
+                                        {
+                                            <span class="badge badge-brand">@p.TransactionType.Label()</span>
+                                        }
+                                        @if (p.PropertyType != null)
+                                        {
+                                            <span>@p.PropertyType.Name &middot;</span>
+                                        }
+                                        @p.Area.ToString("0.##") m²
+                                    </div>
+                                    <div class="small text-muted">
+                                        <i class="bi bi-geo-alt"></i>
+                                        @(p.District != null ? p.District.Name : "")@(p.City != "" ? ", " + p.City : "")
+                                    </div>
+                                    <div class="small text-muted">
+                                        <i class="bi bi-clock"></i> @p.CreatedAt.TimeAgo()
+                                        &middot; <i class="bi bi-eye"></i> @p.ViewCount lượt xem
+                                    </div>
+                                </td>
+                                @if (isAdmin)
+                                {
+                                    <td>
+                                        <div class="fw-semibold">@(p.Owner != null ? p.Owner.FullName : "")</div>
+                                        <div class="small text-muted">@(p.Owner != null ? p.Owner.Email : "")</div>
+                                    </td>
+                                }
+                                <td class="fw-semibold text-nowrap">@p.PriceText()</td>
+                                <td>
+                                    <span class="badge @p.Status.StatusBadge()">@p.Status.StatusText()</span>
+                                    @if (p.IsFeatured)
+                                    {
+                                        <div class="mt-1">
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> Nổi bật</span>
+                                        </div>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex flex-wrap gap-1 justify-content-end">
+                                        @if (p.Status == PropertyStatus.Available)
+                                        {
+                                            <a class="btn btn-sm btn-outline-secondary" title="Xem trang công khai"
+                                               href="@Url.Action("Details", "Property", new { id = p.PropertyId })">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        }
+                                        <a class="btn btn-sm btn-outline-brand" href="@Url.Action("Edit", "Listing", new { id = p.PropertyId })">
+                                            <i class="bi bi-pencil-square"></i> Sửa
+                                        </a>
+
+                                        @if (p.Status != PropertyStatus.SoldRented)
+                                        {
+                                            using (Html.BeginForm("MarkSold", "Listing", new { id = p.PropertyId }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Đánh dấu tin này là đã bán/cho thuê?');" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Đánh dấu đã bán/cho thuê">
+                                                    <i class="bi bi-check2-circle"></i>
+                                                </button>
+                                            }
+                                        }
+
+                                        @using (Html.BeginForm("Delete", "Listing", new { id = p.PropertyId }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Xóa tin này? Hành động không thể hoàn tác.');" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa tin">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <p class="text-muted small mt-3 mb-0">
+            <i class="bi bi-info-circle"></i> Tin mới đăng ở trạng thái <b>Chờ duyệt</b> và chỉ hiển thị công khai sau khi quản trị viên duyệt.
+        </p>
+    }
+</div>

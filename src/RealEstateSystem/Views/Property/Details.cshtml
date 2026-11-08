@@ -1,0 +1,245 @@
+@model RealEstateSystem.Models.PropertyDetailViewModel
+@{
+    var p = Model.Property;
+    ViewBag.Title = p.Title;
+    var images = (p.Images ?? new List<PropertyImage>()).OrderByDescending(i => i.IsPrimary).ThenBy(i => i.SortOrder).ToList();
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Property")">Bất động sản</a></li>
+            <li class="breadcrumb-item active">@p.Title</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+
+            <!-- Thư viện ảnh -->
+            @if (images.Any())
+            {
+                <div id="gallery" class="carousel slide gallery-main" data-bs-ride="false">
+                    <div class="carousel-inner">
+                        @for (int i = 0; i < images.Count; i++)
+                        {
+                            <div class="carousel-item @(i == 0 ? "active" : "")">
+                                <img src="@Url.ImageSrc(images[i])" alt="@p.Title" />
+                            </div>
+                        }
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#gallery" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#gallery" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                </div>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    @for (int i = 0; i < images.Count; i++)
+                    {
+                        <img src="@Url.ImageSrc(images[i])" class="gallery-thumb" alt="Ảnh @(i + 1)"
+                             data-bs-target="#gallery" data-bs-slide-to="@i" />
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="gallery-main"><img src="@Url.ImageSrc(null)" alt="Chưa có ảnh" /></div>
+            }
+
+            <!-- Thông tin chính -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body p-4">
+                    <div class="mb-2">
+                        @if (p.TransactionType != null)
+                        {
+                            <span class="badge badge-brand">@p.TransactionType.Label()</span>
+                        }
+                        @if (p.PropertyType != null)
+                        {
+                            <span class="badge bg-light text-dark border">@p.PropertyType.Name</span>
+                        }
+                        <span class="badge @p.Status.StatusBadge()">@p.Status.StatusText()</span>
+                        @if (p.IsFeatured)
+                        {
+                            <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> Nổi bật</span>
+                        }
+                    </div>
+                    <h3 class="fw-bold">@p.Title</h3>
+                    <div class="text-muted mb-3">
+                        <i class="bi bi-geo-alt-fill text-brand"></i> @p.District, @p.City
+                        <span class="ms-2"><i class="bi bi-clock"></i> @p.CreatedAt.TimeAgo()</span>
+                    </div>
+                    <div class="price fs-3 mb-3">@p.PriceText()</div>
+
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-save-id="@p.Id"><i class="bi bi-heart"></i> <span class="lbl">Lưu tin</span></button>
+
+                        <a class="btn btn-outline-brand btn-sm" target="_blank" href="@Url.Action("Brochure", "Property", new { id = p.Id, download = 1 })"><i class="bi bi-file-earmark-pdf"></i> Tải brochure PDF</a>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-3"><div class="stat-box"><i class="bi bi-rulers"></i><div class="fw-bold">@p.Area.ToString("0.##") m²</div><small class="text-muted">Diện tích</small></div></div>
+                        <div class="col-6 col-md-3"><div class="stat-box"><i class="bi bi-door-closed"></i><div class="fw-bold">@p.Bedrooms</div><small class="text-muted">Phòng ngủ</small></div></div>
+                        <div class="col-6 col-md-3"><div class="stat-box"><i class="bi bi-droplet"></i><div class="fw-bold">@p.Bathrooms</div><small class="text-muted">Phòng tắm</small></div></div>
+                        <div class="col-6 col-md-3"><div class="stat-box"><i class="bi bi-building"></i><div class="fw-bold">@p.Floors</div><small class="text-muted">Số tầng</small></div></div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(p.Amenities))
+                    {
+                        <h5>Tiện ích</h5>
+                        <div class="mb-4">
+                            @foreach (var a in p.Amenities.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <span class="badge bg-light text-dark border me-1 mb-1 py-2"><i class="bi bi-check2 text-brand"></i> @a.Trim()</span>
+                            }
+                        </div>
+                    }
+
+                    <h5>Mô tả chi tiết</h5>
+                    <p class="desc-text mb-0">@p.Description</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột phải: môi giới + form liên hệ -->
+        <div class="col-lg-4">
+            <div class="sticky-side">
+                @if (p.Agent != null)
+                {
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body d-flex align-items-center">
+                            <img class="avatar-sm me-3" alt="@p.Agent.FullName"
+                                 src="@(string.IsNullOrEmpty(p.Agent.AvatarUrl) ? ViewHelper.PlaceholderImage : Url.Content(p.Agent.AvatarUrl))" />
+                            <div>
+                                <div class="fw-bold">@p.Agent.FullName</div>
+                                <div class="small text-muted">Môi giới</div>
+                                <div class="small"><i class="bi bi-telephone text-brand"></i> @p.Agent.Phone</div>
+                                <div class="small"><i class="bi bi-envelope text-brand"></i> @p.Agent.Email</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-brand fw-bold"><i class="bi bi-chat-dots"></i> Gửi yêu cầu liên hệ</div>
+                    <div class="card-body">
+                        @using (Html.BeginForm("Create", "Inquiry", new { area = "" }, FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                            @Html.Hidden("PropertyId", p.Id)
+
+                            <div class="mb-3">
+                                <label class="form-label">Họ tên</label>
+                                @Html.TextBox("FullName", Model.Inquiry.FullName, new { @class = "form-control", maxlength = 100 })
+                                @Html.ValidationMessage("FullName", new { @class = "text-danger small" })
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                @Html.TextBox("Email", Model.Inquiry.Email, new { @class = "form-control", maxlength = 110, inputmode = "email", placeholder = "ten@gmail.com" })
+                                @Html.ValidationMessage("Email", new { @class = "text-danger small" })
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Số điện thoại</label>
+                                @Html.TextBox("Phone", Model.Inquiry.Phone, new { @class = "form-control", maxlength = 10, inputmode = "numeric" })
+                                @Html.ValidationMessage("Phone", new { @class = "text-danger small" })
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Nội dung</label>
+                                @Html.TextArea("Message", Model.Inquiry.Message, 4, 20, new { @class = "form-control" })
+                                @Html.ValidationMessage("Message", new { @class = "text-danger small" })
+                            </div>
+                            if (!User.Identity.IsAuthenticated)
+                            {
+                                <div class="form-text mb-3"><i class="bi bi-info-circle"></i> Bạn không cần đăng nhập. Môi giới sẽ liên hệ lại qua số điện thoại hoặc email bạn cung cấp.</div>
+                            }
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-brand"><i class="bi bi-send"></i> Gửi yêu cầu</button>
+                            </div>
+                        }
+                        <div class="d-grid mt-2">
+                            <button type="button" id="btnZalo" class="btn btn-zalo" data-check-url="@Url.Action("Check", "Zalo", new { id = p.Id })">
+                                <i class="bi bi-chat-text"></i> Liên hệ qua Zalo
+                            </button>
+                            <div id="zaloMsg" class="text-danger small mt-2" style="display:none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tin liên quan -->
+    @if (Model.RelatedProperties != null && Model.RelatedProperties.Any())
+    {
+        <h4 class="section-title mt-5 mb-3">Bất động sản tương tự</h4>
+        <div class="row g-4">
+            @foreach (var r in Model.RelatedProperties)
+            {
+                <div class="col-md-6 col-lg-3">
+                    @Html.Partial("_PropertyCard", r)
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section scripts {
+
+    <script>
+        (function () {
+            var box = document.getElementById('qrBox');
+            if (!box || typeof QRCode === 'undefined') return;
+            new QRCode(box, { text: location.origin + location.pathname, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M });
+            var dl = document.getElementById('qrDownload');
+            dl.addEventListener('click', function (e) {
+                var c = box.querySelector('canvas'), img = box.querySelector('img');
+                var data = c ? c.toDataURL('image/png') : (img ? img.src : null);
+                if (!data) { e.preventDefault(); return; }
+                dl.href = data;
+            });
+        })();
+    </script>
+    <script>
+        (function () {
+            function el(n) { return document.querySelector('[name="' + n + '"]'); }
+            var name = el('FullName'), phone = el('Phone'), msg = el('Message');
+            if (name) name.addEventListener('input', function () {
+                name.value = name.value.replace(/[^\p{L}\p{M} ]/gu, '');
+            });
+            if (phone) phone.addEventListener('input', function () {
+                phone.value = phone.value.replace(/[^0-9]/g, '').slice(0, 10);
+            });
+            if (msg) msg.addEventListener('input', function () {
+                var count = 0, out = '';
+                for (var i = 0; i < msg.value.length; i++) {
+                    var ch = msg.value[i];
+                    if (!/\s/.test(ch)) { if (count >= 500) continue; count++; }
+                    out += ch;
+                }
+                if (out !== msg.value) msg.value = out;
+            });
+        })();
+        var btnZalo = document.getElementById('btnZalo'), zaloMsg = document.getElementById('zaloMsg');
+        if (btnZalo) btnZalo.addEventListener('click', function () {
+            zaloMsg.style.display = 'none';
+            btnZalo.disabled = true;
+            var win = window.open('', '_blank'); // mở tab ngay khi bấm để không bị chặn
+            fetch(btnZalo.dataset.checkUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    if (d.ok) { win.location = d.url; }
+                    else { win.close(); zaloMsg.textContent = d.message; zaloMsg.style.display = 'block'; }
+                })
+                .catch(function () {
+                    win.close();
+                    zaloMsg.textContent = 'Không thể kiểm tra Zalo, vui lòng thử lại.';
+                    zaloMsg.style.display = 'block';
+                })
+                .finally(function () { btnZalo.disabled = false; });
+        });
+    </script>
+}

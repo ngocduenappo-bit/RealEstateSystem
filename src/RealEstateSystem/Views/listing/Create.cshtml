@@ -1,0 +1,44 @@
+﻿@model RealEstateSystem.Models.ViewModels.ListingFormViewModel
+@{
+    ViewBag.Title = "Đăng tin mới";
+}
+
+<div class="lf-page">
+    <div class="lf-hero">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="lf-hero-ico"><i class="bi bi-house-add"></i></span>
+                    <div>
+                        <h3>Đăng tin mới</h3>
+                        <p>Điền thông tin để đưa bất động sản của bạn đến với khách hàng</p>
+                    </div>
+                </div>
+                <a class="btn btn-back" href="@Url.Action("Index", "Listing")">
+                    <i class="bi bi-arrow-left"></i> Về danh sách
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container lf-body">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-9">
+                @using (Html.BeginForm("Create", "Listing", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Partial("_ListingFields", Model)
+
+                    <div class="lf-actions">
+                        <span class="note"><i class="bi bi-info-circle"></i> Sau khi đăng, tin ở trạng thái <b>Chờ duyệt</b> cho tới khi quản trị viên phê duyệt.</span>
+                        <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Listing")">Hủy</a>
+                        <button type="submit" class="btn btn-brand px-4">
+                            <i class="bi bi-send"></i> Đăng tin
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

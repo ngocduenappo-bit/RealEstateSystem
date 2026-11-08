@@ -1,0 +1,132 @@
+@model RealEstateSystem.Models.ViewModels.AdminInquiryDetailViewModel
+@using RealEstateSystem.Helpers
+@{
+    ViewBag.Title = "Yêu cầu: " + Model.PropertyTitle;
+    bool isNew = Model.Status == "New";
+}
+
+@Html.Partial("_AdminStyles")
+
+<style>
+    .chat-box { max-height: 55vh; overflow-y: auto; padding: 1.25rem; background: #F5F8FC; }
+    .chat-row { display: flex; margin-bottom: 1rem; }
+    .chat-row.right { justify-content: flex-end; }
+    .chat-bubble { max-width: 75%; padding: .65rem .95rem; border-radius: 14px; background: #fff; border: 1px solid #DCE5F0; }
+    .chat-row.right .chat-bubble { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .chat-row.admin .chat-bubble { background: var(--gold); color: #fff; border-color: var(--gold-dark); }
+    .chat-bubble .who { font-size: .75rem; opacity: .8; margin-bottom: .15rem; font-weight: 600; }
+    .chat-bubble .txt { white-space: pre-wrap; word-break: break-word; }
+    .chat-bubble .when { font-size: .7rem; opacity: .7; margin-top: .25rem; text-align: right; }
+</style>
+
+<div class="ad-page">
+    <div class="ad-hero">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="ad-hero-ico"><i class="bi bi-chat-text"></i></span>
+                    <div>
+                        <h3>Chi tiết yêu cầu</h3>
+                        <p>@Model.PropertyTitle</p>
+                    </div>
+                </div>
+                <a class="btn btn-back" href="@Url.Action("Inquiries", "Admin")"><i class="bi bi-arrow-left"></i> Danh sách yêu cầu</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container ad-body">
+
+        @* ===== Thông tin cuộc trò chuyện ===== *@
+        <div class="ad-card">
+            <div class="ad-card-body py-3">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md">
+                        <div class="small text-muted">Khách</div>
+                        <div class="fw-semibold">@Model.CustomerName</div>
+                        <div class="small text-muted"><i class="bi bi-telephone"></i> @Model.CustomerPhone</div>
+                    </div>
+                    <div class="col-md">
+                        <div class="small text-muted">Môi giới phụ trách</div>
+                        <div class="fw-semibold">@Model.AgentName</div>
+                    </div>
+                    <div class="col-md">
+                        <div class="small text-muted">Tin đăng</div>
+                        @if (Model.PropertyId.HasValue)
+                        {
+                            <a class="fw-semibold text-decoration-none" target="_blank" href="@Url.Action("Details", "Property", new { id = Model.PropertyId.Value })">
+                                @Model.PropertyTitle <i class="bi bi-box-arrow-up-right small"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="fw-semibold">Liên hệ chung</div>
+                        }
+                        <div class="small text-muted">Bắt đầu @Model.CreatedAt.ToString("dd/MM/yyyy")</div>
+                    </div>
+                    <div class="col-md-auto text-md-end">
+                        <span class="badge @ViewHelper.ConversationStatusBadge(Model.Status) mb-2">@ViewHelper.ConversationStatusText(Model.Status)</span>
+                        @using (Html.BeginForm("SetInquiryStatus", "Admin", new { id = Model.ConversationId, status = isNew ? "Replied" : "New", returnUrl = Request.RawUrl }, FormMethod.Post, new { @class = "d-block" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm @(isNew ? "btn-outline-success" : "btn-outline-secondary")">
+                                <i class="bi @(isNew ? "bi-check2-circle" : "bi-arrow-counterclockwise")"></i>
+                                @(isNew ? "Đánh dấu đã phản hồi" : "Đánh dấu là mới")
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ===== Nội dung trao đổi ===== *@
+        <div class="ad-card">
+            <div class="ad-card-head">
+                <span class="ad-ico"><i class="bi bi-chat-dots"></i></span>
+                <div><h6>Nội dung trao đổi</h6><small>@Model.Messages.Count tin nhắn &middot; khách bên trái, môi giới và quản trị viên bên phải</small></div>
+            </div>
+
+            <div class="chat-box" id="chatBox">
+                @if (Model.Messages.Count == 0)
+                {
+                    <p class="text-center text-muted my-4">Chưa có tin nhắn nào.</p>
+                }
+                else
+                {
+                    foreach (var m in Model.Messages)
+                    {
+                        string kindText = m.SenderKind == "customer" ? "Khách" : (m.SenderKind == "admin" ? "Quản trị viên" : "Môi giới");
+                        <div class="chat-row @(m.SenderKind != "customer" ? "right" : "") @(m.SenderKind == "admin" ? "admin" : "")">
+                            <div class="chat-bubble">
+                                <div class="who">@m.SenderName &middot; @kindText</div>
+                                <div class="txt">@m.Content</div>
+                                <div class="when">@m.CreatedAt.ToString("HH:mm dd/MM/yyyy")</div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="ad-card-foot">
+                @using (Html.BeginForm("InquiryReply", "Admin", new { id = Model.ConversationId }, FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="d-flex gap-2 align-items-end">
+                        <textarea name="content" class="form-control" rows="2" maxlength="2000" required
+                                  placeholder="Nhập phản hồi. Tin nhắn sẽ hiển thị với tên quản trị viên của bạn..."></textarea>
+                        <button type="submit" class="btn btn-brand flex-shrink-0"><i class="bi bi-send"></i> Gửi</button>
+                    </div>
+                    <div class="small text-muted mt-2"><i class="bi bi-info-circle"></i> Gửi phản hồi sẽ chuyển trạng thái sang "Đã phản hồi".</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Cuộn tới tin nhắn mới nhất khi mở trang
+    (function () {
+        var box = document.getElementById('chatBox');
+        if (box) box.scrollTop = box.scrollHeight;
+    })();
+</script>

@@ -1,0 +1,47 @@
+@model RealEstateSystem.Models.ViewModels.PagingInfo
+
+@if (Model.TotalPages > 1)
+{
+    // Giữ nguyên các tham số lọc trên địa chỉ, chỉ đổi số trang
+    Func<int, string> pageUrl = p =>
+    {
+        var query = HttpUtility.ParseQueryString(Request.QueryString.ToString());
+        query["page"] = p.ToString();
+        return Request.Path + "?" + query.ToString();
+    };
+    int start = Math.Max(1, Model.Page - 2);
+    int end = Math.Min(Model.TotalPages, Model.Page + 2);
+
+    <nav>
+        <ul class="pagination justify-content-center mb-0">
+            <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                <a class="page-link" href="@pageUrl(Model.Page - 1)">Trước</a>
+            </li>
+            @if (start > 1)
+            {
+                <li class="page-item"><a class="page-link" href="@pageUrl(1)">1</a></li>
+                if (start > 2)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+            }
+            @for (int i = start; i <= end; i++)
+            {
+                <li class="page-item @(i == Model.Page ? "active" : "")">
+                    <a class="page-link" href="@pageUrl(i)">@i</a>
+                </li>
+            }
+            @if (end < Model.TotalPages)
+            {
+                if (end < Model.TotalPages - 1)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+                <li class="page-item"><a class="page-link" href="@pageUrl(Model.TotalPages)">@Model.TotalPages</a></li>
+            }
+            <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" href="@pageUrl(Model.Page + 1)">Sau</a>
+            </li>
+        </ul>
+    </nav>
+}

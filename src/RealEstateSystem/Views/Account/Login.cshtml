@@ -1,0 +1,71 @@
+@model RealEstateSystem.Models.LoginViewModel
+@{
+    ViewBag.Title = "Đăng nhập";
+}
+
+<div class="auth-grid">
+
+    <!-- Cột trái: ảnh + giới thiệu -->
+    <div class="auth-side">
+        <div class="auth-side-bg" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80');"></div>
+        <div class="auth-side-overlay"></div>
+
+        <div class="auth-side-content d-flex align-items-center gap-3">
+            <span class="footer-brand-mark"><i class="bi bi-bank2"></i></span>
+            <span class="brand-name" style="color: #fff;">ESTORA</span>
+        </div>
+
+        <div class="auth-side-content" style="max-width: 32rem;">
+            <span class="hero-pill">Hệ thống quản lý BĐS</span>
+            <h2>Kết nối giá trị thực, nâng tầm không gian sống.</h2>
+            <p class="auth-side-text">
+                Đăng nhập để quản lý tin đăng, nhận tin nhắn từ khách hàng và kết nối với các chuyên gia môi giới hàng đầu.
+            </p>
+        </div>
+
+        <div class="auth-side-content small" style="color: #94A3B8;">
+            &copy; @DateTime.Now.Year ESTORA Real Estate System. All rights reserved.
+        </div>
+    </div>
+
+    <!-- Cột phải: form đăng nhập -->
+    <div class="auth-main">
+        <div class="auth-box">
+            <div class="text-center mb-4">
+                <h1 class="h2 mb-2">Đăng nhập tài khoản</h1>
+                <p class="text-muted small mb-0">Chào mừng bạn trở lại với hệ thống ESTORA</p>
+            </div>
+
+            <div class="auth-tabs mb-4">
+                <span class="auth-tab active">Đăng nhập</span>
+                <a class="auth-tab" href="@Url.Action("Register", "Account", new { area = "" })">Đăng ký</a>
+            </div>
+
+            @using (Html.BeginForm("Login", "Account", new { area = "" }, FormMethod.Post, new { @class = "d-grid gap-3" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.ReturnUrl)
+                if (ViewData.ModelState.ContainsKey("") && ViewData.ModelState[""].Errors.Count > 0)
+                {
+                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger py-2 mb-0" })
+                }
+
+                <div>
+                    @Html.LabelFor(m => m.Username, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Username, new { @class = "form-control", autofocus = "autofocus", placeholder = "ten@example.com" })
+                    @Html.ValidationMessageFor(m => m.Username, "", new { @class = "text-danger small" })
+                </div>
+                <div>
+                    @Html.LabelFor(m => m.Password, new { @class = "form-label" })
+                    @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "••••••••" })
+                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
+                </div>
+                <div class="form-check">
+                    @Html.CheckBoxFor(m => m.RememberMe, new { @class = "form-check-input" })
+                    @Html.LabelFor(m => m.RememberMe, new { @class = "form-check-label small" })
+                </div>
+                <button type="submit" class="btn btn-brand py-2">Đăng nhập hệ thống</button>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,90 @@
+﻿@{
+    ViewBag.Title = "Liên hệ";
+}
+
+<div class="container py-5">
+    <div class="page-head">
+        <span class="eyebrow">Hỗ trợ 24/7</span>
+        <h1>Liên hệ với chúng tôi</h1>
+        <p>Chúng tôi luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc của bạn về mua bán, cho thuê và đầu tư bất động sản.</p>
+    </div>
+
+    <div class="row g-4 g-lg-5">
+        <div class="col-lg-4">
+            <div class="d-grid gap-4">
+                <div class="info-card">
+                    <div class="info-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div>
+                        <h3>Trụ sở chính</h3>
+                        <p>Tòa nhà ESTORA Tower, Đại lộ Mai Chí Thọ, Phường An Phú, TP. Thủ Đức, TP. Hồ Chí Minh</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon"><i class="bi bi-telephone-fill"></i></div>
+                    <div>
+                        <h3>Điện thoại</h3>
+                        <p>Hotline: 1900 8686 99<br />Hỗ trợ: 0901 234 567</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon"><i class="bi bi-envelope-fill"></i></div>
+                    <div>
+                        <h3>Hòm thư điện tử</h3>
+                        <p>support@estora.vn<br />contact@estora.vn</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon"><i class="bi bi-clock-fill"></i></div>
+                    <div>
+                        <h3>Giờ làm việc</h3>
+                        <p>Thứ 2 - Thứ 7: 8:00 - 17:30</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="panel panel-lg h-100 d-flex flex-column">
+                <h2 class="h3 mb-3">Bạn cần tư vấn về một bất động sản?</h2>
+                <p class="text-muted">
+                    Hãy chọn tin bạn quan tâm, bấm vào xem chi tiết và gửi yêu cầu liên hệ ngay tại trang đó.
+                    Môi giới phụ trách sẽ phản hồi cho bạn sớm nhất.
+                </p>
+
+                <ul class="step-list mt-3">
+                    <li><span>1</span> Chọn bất động sản bạn quan tâm</li>
+                    <li><span>2</span> Bấm xem chi tiết và gửi yêu cầu</li>
+                    <li><span>3</span> Môi giới phản hồi cho bạn sớm nhất</li>
+                </ul>
+
+                <div class="mt-4">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <h3 class="h5 mb-3">Gửi liên hệ chung</h3>
+                        using (Html.BeginForm("Contact", "Home", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <div class="mb-3">
+<textarea name="message" rows="4" maxlength="1000" class="form-control" placeholder="Nhập nội dung bạn cần hỗ trợ..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-brand"><i class="bi bi-send"></i> Gửi liên hệ</button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-light border mb-0">
+                            Muốn gửi liên hệ chung cho chúng tôi? <a href="@Url.Action("Login", "Account", new { returnUrl = Url.Action("Contact", "Home") })">Đăng nhập</a> hoặc
+                            <a href="@Url.Action("Register", "Account")">đăng ký</a> để gửi tin nhắn.
+                        </div>
+                    }
+                </div>
+
+                <div class="mt-auto pt-4">
+                    <a href="@Url.Action("Index", "Property")" class="btn btn-brand btn-lg">
+                        <i class="bi bi-search"></i> Xem danh sách bất động sản
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

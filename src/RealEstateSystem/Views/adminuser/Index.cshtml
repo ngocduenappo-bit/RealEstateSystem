@@ -1,0 +1,170 @@
+﻿@model RealEstateSystem.Models.ViewModels.AdminUserListViewModel
+@{
+    ViewBag.Title = "Quản lý tài khoản";
+    var me = Session["UserId"] as int?;
+}
+
+@Html.Partial("_AdminStyles")
+
+<div class="ad-page">
+    <div class="ad-hero">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="ad-hero-ico"><i class="bi bi-people"></i></span>
+                    <div>
+                        <h3>Quản lý tài khoản</h3>
+                        <p>Tạo, chỉnh sửa và khóa/mở khóa tài khoản môi giới và người dùng</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-back" href="@Url.Action("Index", "Admin")"><i class="bi bi-arrow-left"></i> Trang quản trị</a>
+                    <a class="btn btn-gold" href="@Url.Action("Create", "AdminUser")"><i class="bi bi-person-plus"></i> Tạo tài khoản</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container ad-body">
+
+        @* ===== Tìm kiếm ===== *@
+        <div class="ad-card">
+            <div class="ad-card-body py-3">
+                @using (Html.BeginForm("Index", "AdminUser", FormMethod.Get, new { @class = "row g-2 align-items-center" }))
+                {
+                    <div class="col-md">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" name="keyword" maxlength="100" value="@Model.Keyword" class="form-control" placeholder="Tìm theo họ tên, email hoặc số điện thoại..." />
+                        </div>
+                    </div>
+                    <div class="col-md-auto">
+                        <select name="posted" class="form-select" onchange="this.form.submit()">
+                            <option value="" @(string.IsNullOrEmpty(Model.Posted) ? "selected" : "")>Tất cả tài khoản</option>
+                            <option value="yes" @(Model.Posted == "yes" ? "selected" : "")>Đã đăng tin</option>
+                            <option value="no" @(Model.Posted == "no" ? "selected" : "")>Chưa đăng tin</option>
+                        </select>
+                    </div>
+                    <div class="col-md-auto d-flex gap-2">
+                        <button type="submit" class="btn btn-brand"><i class="bi bi-search"></i> Tìm kiếm</button>
+                        @if (!string.IsNullOrWhiteSpace(Model.Keyword) || !string.IsNullOrEmpty(Model.Posted))
+                        {
+                            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "AdminUser")">Xóa lọc</a>
+                        }
+                    </div>        
+                }
+            </div>
+        </div>
+
+        @* ===== Danh sách ===== *@
+        <div class="ad-card">
+            <div class="ad-card-head">
+                <span class="ad-ico"><i class="bi bi-person-lines-fill"></i></span>
+                <div><h6>Danh sách tài khoản</h6><small>Tổng cộng @Model.Paging.TotalItems tài khoản</small></div>
+            </div>
+
+            @if (Model.Users.Count == 0)
+            {
+                <div class="text-center py-5">
+                    <div class="display-5 text-muted"><i class="bi bi-person-x"></i></div>
+                    <p class="text-muted mt-2 mb-0">Không tìm thấy tài khoản nào.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table ad-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Người dùng</th>
+                                <th>Vai trò</th>
+                                <th class="text-center">Hoạt động</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var u in Model.Users)
+                            {
+                                string initial = string.IsNullOrWhiteSpace(u.FullName) ? "?" : u.FullName.Trim().Split(' ').Last().Substring(0, 1).ToUpper();
+                                bool isMe = me.HasValue && me.Value == u.UserId;
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <span class="ad-avatar @(u.Role == "admin" ? "is-admin" : "")">@initial</span>
+                                            <div>
+                                                <div class="fw-semibold">
+                                                    @u.FullName
+                                                    @if (isMe)
+                                                    {
+                                                        <span class="badge bg-light text-dark border ms-1">Bạn</span>
+                                                    }
+                                                </div>
+                                                <div class="small text-muted"><i class="bi bi-envelope"></i> @u.Email</div>
+                                                <div class="small text-muted">
+                                                    <i class="bi bi-telephone"></i> @u.Phone
+                                                    &middot; <i class="bi bi-calendar3"></i> @u.CreatedAt.ToString("dd/MM/yyyy")
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column align-items-start gap-1">
+                                            @if (u.Role == "admin")
+                                            {
+                                                <span class="badge" style="background:var(--navy)">Quản trị viên</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary-subtle text-secondary-emphasis">Người dùng</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="text-center small">
+                                        <div><i class="bi bi-house-door text-brand"></i> <b>@u.ListingCount</b> tin đăng</div>
+                                        <div class="text-muted"><i class="bi bi-chat-dots"></i> <b>@u.ConversationCount</b> yêu cầu</div>
+                                    </td>
+                                    <td>
+                                        @if (u.Status == "locked")
+                                        {
+                                            <span class="badge bg-danger">Đã khóa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Hoạt động</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-1">
+                                            <a class="btn btn-sm btn-outline-brand" title="Sửa tài khoản" href="@Url.Action("Edit", "AdminUser", new { id = u.UserId })">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            @if (!isMe)
+                                            {
+                                                bool locked = u.Status == "locked";
+                                                using (Html.BeginForm("ToggleLock", "AdminUser", new { id = u.UserId }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('" + (locked ? "Mở khóa" : "Khóa") + " tài khoản này?');" }))
+                                                {
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm @(locked ? "btn-outline-success" : "btn-outline-danger")" title="@(locked ? "Mở khóa" : "Khóa tài khoản")">
+                                                        <i class="bi @(locked ? "bi-unlock" : "bi-lock")"></i>
+                                                    </button>
+                                                }
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                if (Model.Paging.TotalPages > 1)
+                {
+                    <div class="ad-card-foot">
+                        @Html.Partial("_Pagination", Model.Paging)
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,58 @@
+@model RealEstateSystem.Models.Property
+
+<div class="property-row card mb-3">
+    <div class="d-flex flex-column flex-md-row">
+        <a class="row-img-wrap" href="@Url.Action("Details", "Property", new { id = Model.Id, area = "" })">
+            <img class="row-img" src="@Model.PrimaryImageUrl(Url)" alt="@Model.Title" />
+            <div class="badges">
+                @if (Model.TransactionType != null)
+                {
+                    <span class="badge badge-brand">@Model.TransactionType.Label()</span>
+                }
+                @if (Model.IsFeatured)
+                {
+                    <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> Nổi bật</span>
+                }
+                @if (Model.Status != PropertyStatus.Available)
+                {
+                    <span class="badge @Model.Status.StatusBadge()">@Model.Status.StatusText()</span>
+                }
+            </div>
+            <span class="img-count"><i class="bi bi-images"></i> @(Model.Images == null ? 0 : Model.Images.Count)</span>
+        </a>
+
+        <div class="p-3 flex-grow-1 d-flex flex-column">
+            <a class="card-title-link h5 mb-1" href="@Url.Action("Details", "Property", new { id = Model.Id, area = "" })">@Model.Title</a>
+            <div class="price fs-5 mb-2">
+                @Model.PriceText()
+                <small class="text-muted fw-normal">&middot; @Model.Area.ToString("0.##") m²</small>
+            </div>
+            <div class="mb-2">
+                <span class="spec"><i class="bi bi-door-closed"></i> @Model.Bedrooms phòng ngủ</span>
+                <span class="spec"><i class="bi bi-droplet"></i> @Model.Bathrooms phòng tắm</span>
+                <span class="spec"><i class="bi bi-building"></i> @Model.Floors tầng</span>
+                @if (Model.PropertyType != null)
+                {
+                    <span class="spec"><i class="bi bi-house-door"></i> @Model.PropertyType.Name</span>
+                }
+            </div>
+            <div class="text-muted small">
+                <i class="bi bi-geo-alt"></i> @Model.Address, @Model.District, @Model.City
+            </div>
+            <div class="mt-auto pt-3 d-flex justify-content-between align-items-center small text-muted">
+                <span>
+                    @if (Model.Agent != null)
+                    {
+                        <i class="bi bi-person-circle"></i> @Model.Agent.FullName
+                        <text>&middot;</text>
+                    }
+                    @Model.CreatedAt.TimeAgo()
+                </span>
+                <span class="d-inline-flex gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-save-id="@Model.Id" title="Lưu tin"><i class="bi bi-heart"></i></button>
+                    <a class="btn btn-sm btn-outline-brand" href="@Url.Action("Details", "Property", new { id = Model.Id, area = "" })">Xem chi tiết</a>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

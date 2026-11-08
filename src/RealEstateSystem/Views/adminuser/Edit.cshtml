@@ -1,0 +1,130 @@
+﻿@model RealEstateSystem.Models.ViewModels.AdminUserEditViewModel
+@{
+    ViewBag.Title = "Sửa tài khoản";
+    var me = Session["UserId"] as int?;
+    bool isMe = me.HasValue && me.Value == Model.UserId;
+}
+
+@Html.Partial("_AdminStyles")
+
+<div class="ad-page">
+    <div class="ad-hero">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="ad-hero-ico"><i class="bi bi-person-gear"></i></span>
+                    <div>
+                        <h3>Sửa tài khoản</h3>
+                        <p>@Model.Email</p>
+                    </div>
+                </div>
+                <a class="btn btn-back" href="@Url.Action("Index", "AdminUser")"><i class="bi bi-arrow-left"></i> Về danh sách</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container ad-body">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
+                @using (Html.BeginForm("Edit", "AdminUser", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.UserId)
+
+                    <div class="ad-card">
+                        <div class="ad-card-head">
+                            <span class="ad-ico"><i class="bi bi-person-vcard"></i></span>
+                            <div><h6>Thông tin tài khoản</h6><small>Email dùng để đăng nhập nên không thể thay đổi</small></div>
+                        </div>
+                        <div class="ad-card-body">
+                            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger py-2" })
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                        <input type="text" class="form-control" value="@Model.Email" disabled />
+                                    </div>
+                                </div>
+                                <div class="col-md-7">
+                                    <label class="form-label" for="FullName">Họ tên <span class="text-danger">*</span></label>
+                                    @Html.TextBoxFor(m => m.FullName, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger small" })
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label" for="Phone">Số điện thoại <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                        @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", type = "tel" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger small" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ad-card">
+                        <div class="ad-card-head">
+                            <span class="ad-ico"><i class="bi bi-shield-check"></i></span>
+                            <div><h6>Vai trò và trạng thái</h6><small>Phân quyền và khóa/mở khóa tài khoản</small></div>
+                        </div>
+                        <div class="ad-card-body">
+                            @if (isMe)
+                            {
+                                <div class="alert alert-warning py-2">
+                                    <i class="bi bi-exclamation-triangle"></i> Đây là tài khoản của bạn nên không thể tự hạ quyền hoặc tự khóa.
+                                </div>
+                                @* Ô bị vô hiệu hóa không được gửi đi, nên gửi kèm giá trị hiện tại bằng ô ẩn *@
+                                <input type="hidden" name="Role" value="@Model.Role" />
+                                <input type="hidden" name="Status" value="@Model.Status" />
+                            }
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="Role">Vai trò</label>
+                                    <select name="Role" id="Role" class="form-select" @(isMe ? "disabled" : "")>
+                                        <option value="user" @(Model.Role != "admin" ? "selected" : "")>Người dùng</option>
+                                        <option value="admin" @(Model.Role == "admin" ? "selected" : "")>Quản trị viên</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="Status">Trạng thái</label>
+                                    <select name="Status" id="Status" class="form-select" @(isMe ? "disabled" : "")>
+                                        <option value="active" @(Model.Status != "locked" ? "selected" : "")>Hoạt động</option>
+                                        <option value="locked" @(Model.Status == "locked" ? "selected" : "")>Đã khóa</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ad-card">
+                        <div class="ad-card-head">
+                            <span class="ad-ico"><i class="bi bi-key"></i></span>
+                            <div><h6>Đổi mật khẩu</h6><small>Để trống nếu muốn giữ mật khẩu hiện tại</small></div>
+                        </div>
+                        <div class="ad-card-body">
+                            <label class="form-label" for="NewPassword">Mật khẩu mới</label>
+                            <div class="input-group">
+                                @Html.PasswordFor(m => m.NewPassword, new { @class = "form-control", placeholder = "Tối thiểu 6 ký tự (không bắt buộc)", autocomplete = "new-password" })
+                                <button type="button" class="btn btn-outline-secondary" id="togglePwd" title="Hiện/ẩn mật khẩu"><i class="bi bi-eye"></i></button>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.NewPassword, "", new { @class = "text-danger small" })
+                        </div>
+                    </div>
+
+                    <div class="ad-actions">
+                        <a class="btn btn-outline-secondary ms-auto" href="@Url.Action("Index", "AdminUser")">Hủy</a>
+                        <button type="submit" class="btn btn-brand px-4"><i class="bi bi-save"></i> Lưu thay đổi</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>document.getElementById('togglePwd').addEventListener('click', function () {
+        var pwd = document.getElementById('NewPassword');
+        var show = pwd.type === 'password';
+        pwd.type = show ? 'text' : 'password';
+        this.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });</script>

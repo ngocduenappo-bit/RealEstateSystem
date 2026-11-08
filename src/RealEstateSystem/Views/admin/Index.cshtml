@@ -1,0 +1,172 @@
+﻿@model RealEstateSystem.Models.ViewModels.AdminDashboardViewModel
+@using RealEstateSystem.Helpers
+@{
+    ViewBag.Title = "Trang quản trị";
+}
+
+@Html.Partial("_AdminStyles")
+
+<style>
+    .stat-tile { display: flex; align-items: center; gap: 1rem; padding: 1.1rem 1.25rem; height: 100%; }
+    .stat-tile .num { font-size: 1.75rem; font-weight: 700; color: var(--navy); line-height: 1; }
+    .stat-tile .lbl { color: var(--muted); font-size: .85rem; margin-top: .25rem; }
+    a.stat-link { text-decoration: none; color: inherit; display: block; height: 100%; }
+    a.stat-link:hover .ad-card { box-shadow: 0 10px 24px rgba(30,58,95,.15); transform: translateY(-2px); }
+    .ad-card { transition: box-shadow .15s, transform .15s; }
+</style>
+
+<div class="ad-page">
+    <div class="ad-hero">
+        <div class="container">
+            <div class="d-flex align-items-center gap-3">
+                <span class="ad-hero-ico"><i class="bi bi-speedometer2"></i></span>
+                <div>
+                    <h3>Trang quản trị</h3>
+                    <p>Tổng quan hệ thống và các tin đang chờ duyệt</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container ad-body">
+
+        @* ===== Thẻ thống kê ===== *@
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-lg-4">
+                <a class="stat-link" href="@Url.Action("Index", "AdminUser")">
+                    <div class="ad-card mb-0 h-100">
+                        <div class="stat-tile">
+                            <span class="ad-ico"><i class="bi bi-people"></i></span>
+                            <div><div class="num">@Model.TotalUsers</div><div class="lbl">Tài khoản</div></div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-lg-4">
+                <a class="stat-link" href="@Url.Action("Properties", "Admin")">
+                    <div class="ad-card mb-0 h-100">
+                        <div class="stat-tile">
+                            <span class="ad-ico"><i class="bi bi-buildings"></i></span>
+                            <div><div class="num">@Model.TotalProperties</div><div class="lbl">Tổng số tin đăng</div></div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-lg-4">
+                <a class="stat-link" href="@Url.Action("Properties", "Admin", new { status = "Pending" })">
+                    <div class="ad-card mb-0 h-100">
+                        <div class="stat-tile">
+                            <span class="ad-ico"><i class="bi bi-hourglass-split"></i></span>
+                            <div><div class="num">@Model.PendingCount</div><div class="lbl">Chờ duyệt</div></div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-lg-4">
+                <a class="stat-link" href="@Url.Action("Properties", "Admin", new { status = "Active" })">
+                    <div class="ad-card mb-0 h-100">
+                        <div class="stat-tile">
+                            <span class="ad-ico"><i class="bi bi-eye"></i></span>
+                            <div><div class="num">@Model.ActiveCount</div><div class="lbl">Đang hiển thị</div></div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-lg-4">
+                <a class="stat-link" href="@Url.Action("Properties", "Admin", new { status = "Sold_Rented" })">
+                    <div class="ad-card mb-0 h-100">
+                        <div class="stat-tile">
+                            <span class="ad-ico"><i class="bi bi-check2-circle"></i></span>
+                            <div><div class="num">@Model.SoldCount</div><div class="lbl">Đã bán / cho thuê</div></div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-lg-4">
+                <a class="stat-link" href="@Url.Action("Inquiries", "Admin", new { status = "New" })">
+                    <div class="ad-card mb-0 h-100">
+                        <div class="stat-tile">
+                            <span class="ad-ico"><i class="bi bi-chat-dots"></i></span>
+                            <div><div class="num">@Model.NewConversations</div><div class="lbl">Yêu cầu mới của khách</div></div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        @* ===== Lối tắt quản lý ===== *@
+        <div class="ad-card">
+            <div class="ad-card-body py-3 d-flex flex-wrap gap-2">
+                <a class="btn btn-gold" href="@Url.Action("Statistics", "Admin")"><i class="bi bi-bar-chart-line"></i> Thống kê</a>
+                <a class="btn btn-outline-brand" href="@Url.Action("Properties", "Admin")"><i class="bi bi-buildings"></i> Quản lý tin đăng</a>
+                <a class="btn btn-outline-brand" href="@Url.Action("Index", "Category")"><i class="bi bi-tags"></i> Quản lý danh mục</a>
+                <a class="btn btn-outline-brand" href="@Url.Action("Index", "AdminUser")"><i class="bi bi-people"></i> Quản lý tài khoản</a>
+                <a class="btn btn-outline-brand" href="@Url.Action("Inquiries", "Admin")"><i class="bi bi-inbox"></i> Yêu cầu của khách</a>
+                <a class="btn btn-outline-brand" href="@Url.Action("Index", "Conversation")"><i class="bi bi-chat-dots"></i> Tin nhắn của tôi</a>
+            </div>
+        </div>
+
+        @* ===== Tin chờ duyệt ===== *@
+        <div class="ad-card">
+            <div class="ad-card-head">
+                <span class="ad-ico"><i class="bi bi-hourglass-split"></i></span>
+                <div>
+                    <h6>Tin chờ duyệt</h6>
+                    <small>Hiển thị tối đa 5 tin cũ nhất</small>
+                </div>
+                <a class="btn btn-sm btn-outline-brand ms-auto" href="@Url.Action("Properties", "Admin", new { status = "Pending" })">Xem tất cả</a>
+            </div>
+
+            @if (Model.PendingList == null || Model.PendingList.Count == 0)
+            {
+                <div class="text-center py-5">
+                    <div class="display-5 text-muted"><i class="bi bi-check2-all"></i></div>
+                    <p class="text-muted mt-2 mb-0">Không có tin nào đang chờ duyệt.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table ad-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Tin đăng</th>
+                                <th>Người đăng</th>
+                                <th>Giá</th>
+                                <th>Ngày đăng</th>
+                                <th class="text-end">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in Model.PendingList)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">@p.Title</div>
+                                        <div class="small text-muted">
+                                            @(p.PropertyType != null ? p.PropertyType.Name : "") &middot;
+                                            @(p.District != null ? p.District.Name : "")@(string.IsNullOrEmpty(p.City) ? "" : ", " + p.City)
+                                        </div>
+                                    </td>
+                                    <td>@(p.Owner != null ? p.Owner.FullName : "")</td>
+                                    <td class="text-nowrap">@p.PriceText()</td>
+                                    <td class="text-nowrap small text-muted">@p.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-1">
+                                            <a class="btn btn-sm btn-outline-brand" title="Xem tin" target="_blank" href="@Url.Action("Details", "Property", new { id = p.PropertyId })"><i class="bi bi-box-arrow-up-right"></i></a>
+                                            @using (Html.BeginForm("Approve", "Admin", new { id = p.PropertyId, returnUrl = Request.RawUrl }, FormMethod.Post, new { @class = "d-inline" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i> Duyệt</button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

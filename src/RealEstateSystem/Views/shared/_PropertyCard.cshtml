@@ -1,0 +1,61 @@
+@model RealEstateSystem.Models.Property
+@{
+    var detailUrl = Url.Action("Details", "Property", new { id = Model.Id, area = "" });
+    string transLabel = Model.TransactionType != null ? Model.TransactionType.Label() : null;
+    bool isRent = transLabel != null && transLabel.ToLower().Contains("thuê");
+}
+
+<div class="property-card">
+    <div class="property-thumb">
+        <a href="@detailUrl">
+            <img src="@Model.PrimaryImageUrl(Url)" alt="@Model.Title" />
+        </a>
+
+        <div class="badges">
+            @if (transLabel != null)
+            {
+                <span class="p-badge @(isRent ? "rent" : "sale")">@transLabel</span>
+            }
+            @if (Model.IsFeatured)
+            {
+                <span class="p-badge hot">Nổi bật</span>
+            }
+            @if (Model.Status != PropertyStatus.Available)
+            {
+                <span class="badge @Model.Status.StatusBadge()">@Model.Status.StatusText()</span>
+            }
+        </div>
+
+        <span class="img-count"><i class="bi bi-images"></i> @(Model.Images == null ? 0 : Model.Images.Count)</span>
+
+        <div class="card-actions">
+            <button type="button" class="act-btn" data-save-id="@Model.Id" title="Lưu tin"><i class="bi bi-heart"></i></button>
+
+        </div>
+
+        <div class="price-tag">@Model.PriceText()</div>
+    </div>
+
+    <div class="property-body">
+        <div>
+            <a class="card-title-link" href="@detailUrl">@Model.Title</a>
+            <div class="property-loc">
+                <i class="bi bi-geo-alt-fill"></i>
+                <span>@Model.District, @Model.City &middot; @Model.CreatedAt.TimeAgo()</span>
+            </div>
+        </div>
+
+        <div class="property-specs">
+            <span class="spec" title="Diện tích"><i class="bi bi-rulers"></i> <b>@Model.Area.ToString("0.##") m²</b></span>
+            @if (Model.Bedrooms > 0)
+            {
+                <span class="spec" title="Phòng ngủ"><i class="bi bi-door-open"></i> <b>@Model.Bedrooms PN</b></span>
+            }
+            @if (Model.Bathrooms > 0)
+            {
+                <span class="spec" title="Phòng tắm"><i class="bi bi-droplet"></i> <b>@Model.Bathrooms WC</b></span>
+            }
+            <a href="@detailUrl" class="btn-detail">Chi tiết</a>
+        </div>
+    </div>
+</div>

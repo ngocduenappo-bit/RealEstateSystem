@@ -1,0 +1,108 @@
+﻿@model RealEstateSystem.Models.ViewModels.AdminUserCreateViewModel
+@{
+    ViewBag.Title = "Tạo tài khoản";
+}
+
+@Html.Partial("_AdminStyles")
+
+<div class="ad-page">
+    <div class="ad-hero">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="ad-hero-ico"><i class="bi bi-person-plus"></i></span>
+                    <div>
+                        <h3>Tạo tài khoản mới</h3>
+                        <p>Tạo tài Tạo tài khoản người dùng hoặc quản trị viên</p>
+                    </div>
+                </div>
+                <a class="btn btn-back" href="@Url.Action("Index", "AdminUser")"><i class="bi bi-arrow-left"></i> Về danh sách</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container ad-body">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
+                @using (Html.BeginForm("Create", "AdminUser", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="ad-card">
+                        <div class="ad-card-head">
+                            <span class="ad-ico"><i class="bi bi-person-vcard"></i></span>
+                            <div><h6>Thông tin tài khoản</h6><small>Họ tên, email đăng nhập và số điện thoại</small></div>
+                        </div>
+                        <div class="ad-card-body">
+                            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger py-2" })
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label" for="FullName">Họ tên <span class="text-danger">*</span></label>
+                                    @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", autofocus = "autofocus", placeholder = "Nguyễn Văn A" })
+                                    @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger small" })
+                                </div>
+                                <div class="col-md-7">
+                                    <label class="form-label" for="Email">Email đăng nhập <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", placeholder = "ten@gmail.com" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small" })
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label" for="Phone">Số điện thoại <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                        @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", type = "tel", placeholder = "0901234567" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger small" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ad-card">
+                        <div class="ad-card-head">
+                            <span class="ad-ico"><i class="bi bi-shield-lock"></i></span>
+                            <div><h6>Mật khẩu và vai trò</h6><small>Mật khẩu tối thiểu 6 ký tự</small></div>
+                        </div>
+                        <div class="ad-card-body">
+                            <div class="row g-3">
+                                <div class="col-md-7">
+                                    <label class="form-label" for="Password">Mật khẩu <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Tối thiểu 6 ký tự" })
+                                        <button type="button" class="btn btn-outline-secondary" id="togglePwd" title="Hiện/ẩn mật khẩu"><i class="bi bi-eye"></i></button>
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label" for="Role">Vai trò</label>
+                                    <select name="Role" id="Role" class="form-select">
+                                        <option value="user" @(Model.Role == "user" ? "selected" : "")>Người dùng</option>
+                                        <option value="admin" @(Model.Role == "admin" ? "selected" : "")>Quản trị viên</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-text mt-3">
+                                <i class="bi bi-info-circle"></i> Tài khoản "Người dùng" có thể xem tin, gửi yêu cầu và đăng tin. Chỉ chọn "Quản trị viên" cho người cần toàn quyền quản lý.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ad-actions">
+                        <a class="btn btn-outline-secondary ms-auto" href="@Url.Action("Index", "AdminUser")">Hủy</a>
+                        <button type="submit" class="btn btn-brand px-4"><i class="bi bi-person-check"></i> Tạo tài khoản</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>document.getElementById('togglePwd').addEventListener('click', function () {
+        var pwd = document.getElementById('Password');
+        var show = pwd.type === 'password';
+        pwd.type = show ? 'text' : 'password';
+        this.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });</script>

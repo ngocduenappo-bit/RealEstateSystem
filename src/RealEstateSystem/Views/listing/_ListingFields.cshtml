@@ -1,0 +1,584 @@
+@model RealEstateSystem.Models.ViewModels.ListingFormViewModel
+
+<style>
+    /* ===== Giao diện form đăng/sửa tin (navy + champagne) ===== */
+    .lf-page {
+        background: linear-gradient(180deg, #E8EFF8 0, #F3F6FB 380px, #F7F8FA 100%);
+        padding-bottom: 2rem;
+    }
+
+    .lf-hero {
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        padding: 2.25rem 0 5rem;
+        background: linear-gradient(120deg, var(--navy-dark) 0%, var(--navy) 55%, var(--navy-light) 100%);
+    }
+
+        .lf-hero::before {
+            content: "";
+            position: absolute;
+            right: -60px;
+            top: -80px;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: rgba(212,168,83,.22);
+        }
+
+        .lf-hero::after {
+            content: "";
+            position: absolute;
+            right: 140px;
+            bottom: -110px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.07);
+        }
+
+        .lf-hero .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .lf-hero h3 {
+            color: #fff;
+            margin: 0;
+        }
+
+        .lf-hero p {
+            color: rgba(255,255,255,.78);
+            margin: .35rem 0 0;
+        }
+
+    .lf-hero-ico {
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        font-size: 1.6rem;
+        background: var(--gold);
+        color: #fff;
+        box-shadow: 0 8px 20px rgba(0,0,0,.25);
+        flex-shrink: 0;
+    }
+
+    .lf-hero .btn-back {
+        color: #fff;
+        border: 1px solid rgba(255,255,255,.45);
+        background: rgba(255,255,255,.08);
+    }
+
+        .lf-hero .btn-back:hover {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+        }
+
+    .lf-body {
+        margin-top: -3rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .lf-card {
+        background: #fff;
+        border: 1px solid #DCE5F0;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(30,58,95,.08);
+        margin-bottom: 1.25rem;
+    }
+
+    .lf-card-head {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: .85rem 1.5rem;
+        background: linear-gradient(90deg, #EDF2FA 0%, #F8FAFD 100%);
+        border-bottom: 1px solid #DCE5F0;
+    }
+
+        .lf-card-head h6 {
+            margin: 0;
+            color: var(--navy);
+            font-weight: 600;
+        }
+
+        .lf-card-head small {
+            color: var(--muted);
+        }
+
+    .lf-ico {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-size: 1.1rem;
+        background: rgba(212,168,83,.2);
+        color: var(--gold-dark);
+        flex-shrink: 0;
+    }
+
+    .lf-card-body {
+        padding: 1.5rem;
+    }
+
+    .lf-card .form-control, .lf-card .form-select, .lf-card .input-group-text {
+        background-color: #F5F8FC;
+        border-color: #D3DDEA;
+        border-radius: 10px;
+    }
+
+    .lf-card .input-group > .form-control {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .lf-card .input-group > .input-group-text:last-child {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .lf-card .input-group > .input-group-text:first-child {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .lf-card .input-group > .form-control:not(:first-child) {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .lf-card .input-group-text {
+        color: var(--navy);
+        font-weight: 600;
+    }
+
+    .lf-card .form-control:focus, .lf-card .form-select:focus {
+        background-color: #fff;
+        border-color: var(--gold);
+        box-shadow: 0 0 0 .22rem rgba(212,168,83,.25);
+    }
+
+    .lf-card .input-validation-error {
+        border-color: var(--danger) !important;
+        background-color: #FDF3F3 !important;
+    }
+
+    /* Tiện ích dạng viên bấm chọn */
+    .lf-chip {
+        position: relative;
+        display: inline-block;
+    }
+
+        .lf-chip input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .lf-chip label {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .5rem 1rem;
+            margin: 0;
+            cursor: pointer;
+            border: 1px solid #D3DDEA;
+            border-radius: 999px;
+            background: #F5F8FC;
+            font-size: .9rem;
+            transition: all .15s;
+        }
+
+            .lf-chip label:hover {
+                border-color: var(--gold);
+                background: #FFF9EC;
+            }
+
+            .lf-chip label .bi {
+                display: none;
+            }
+
+        .lf-chip input:checked + label {
+            background: var(--navy);
+            border-color: var(--navy);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(30,58,95,.25);
+        }
+
+            .lf-chip input:checked + label .bi {
+                display: inline;
+                color: var(--gold-light);
+            }
+
+        .lf-chip input:focus-visible + label {
+            outline: 2px solid var(--gold);
+            outline-offset: 2px;
+        }
+
+    /* Khung chọn ảnh */
+    .lf-drop {
+        display: block;
+        text-align: center;
+        cursor: pointer;
+        padding: 2rem 1rem;
+        margin: 0;
+        border: 2px dashed #B9C9DE;
+        border-radius: 14px;
+        background: #F5F8FC;
+        transition: all .15s;
+    }
+
+        .lf-drop:hover, .lf-drop.is-over {
+            border-color: var(--gold);
+            background: #FFF9EC;
+        }
+
+        .lf-drop .bi-cloud-arrow-up {
+            font-size: 2.4rem;
+            color: var(--gold-dark);
+            line-height: 1;
+        }
+
+    .lf-thumb {
+        width: 96px;
+        height: 72px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 8px rgba(30,58,95,.2);
+    }
+
+    /* Thanh nút dính đáy */
+    .lf-actions {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        flex-wrap: wrap;
+        padding: .85rem 1.25rem;
+        margin-top: 1.25rem;
+        background: rgba(255,255,255,.94);
+        backdrop-filter: blur(8px);
+        border: 1px solid #DCE5F0;
+        border-radius: 14px;
+        box-shadow: 0 -6px 24px rgba(30,58,95,.12);
+    }
+
+        .lf-actions .note {
+            color: var(--muted);
+            font-size: .85rem;
+            margin-right: auto;
+        }
+</style>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger py-2 shadow-sm">
+        <i class="bi bi-exclamation-triangle"></i> Vui lòng kiểm tra lại các trường được đánh dấu đỏ bên dưới.
+    </div>
+}
+
+@if (Model.IsAdmin)
+{
+    <div class="lf-card">
+        <div class="lf-card-head">
+            <span class="lf-ico"><i class="bi bi-person-check"></i></span>
+            <div><h6>Tài khoản được gán</h6><small>Tin đăng sẽ thuộc về tài khoản người dùng này</small></div>
+        </div>
+        <div class="lf-card-body">
+            <label class="form-label" for="AssignedUserId">Gán cho tài khoản <span class="text-danger">*</span></label>
+            @Html.DropDownListFor(m => m.AssignedUserId, Model.UserList, "-- Chọn tài khoản người dùng --", new { @class = "form-select" })
+            @Html.ValidationMessageFor(m => m.AssignedUserId, "", new { @class = "text-danger small" })
+        </div>
+    </div>
+}
+
+@* ===== 1. Thông tin cơ bản ===== *@
+<div class="lf-card">
+    <div class="lf-card-head">
+        <span class="lf-ico"><i class="bi bi-card-text"></i></span>
+        <div><h6>Thông tin cơ bản</h6><small>Tiêu đề, loại và hình thức giao dịch</small></div>
+    </div>
+    <div class="lf-card-body">
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label" for="Title">Tiêu đề tin đăng <span class="text-danger">*</span></label>
+                @Html.TextBoxFor(m => m.Title, new { @class = "form-control", maxlength = "200", placeholder = "VD: Căn hộ 2PN Vinhomes Grand Park view sông" })
+                @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger small" })
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="PropertyTypeId">Loại bất động sản <span class="text-danger">*</span></label>
+                @Html.DropDownListFor(m => m.PropertyTypeId, Model.PropertyTypeList, "-- Chọn loại --", new { @class = "form-select" })
+                @Html.ValidationMessageFor(m => m.PropertyTypeId, "", new { @class = "text-danger small" })
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="TransactionTypeId">Hình thức giao dịch <span class="text-danger">*</span></label>
+                @Html.DropDownListFor(m => m.TransactionTypeId, Model.TransactionTypeList, "-- Chọn hình thức --", new { @class = "form-select" })
+                @Html.ValidationMessageFor(m => m.TransactionTypeId, "", new { @class = "text-danger small" })
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ===== 2. Vị trí ===== *@
+<div class="lf-card">
+    <div class="lf-card-head">
+        <span class="lf-ico"><i class="bi bi-geo-alt"></i></span>
+        <div><h6>Vị trí</h6><small>Chọn tỉnh/thành trước, quận/huyện sẽ tự cập nhật</small></div>
+    </div>
+    <div class="lf-card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="ProvinceId">Tỉnh/Thành phố <span class="text-danger">*</span></label>
+                @Html.DropDownListFor(m => m.ProvinceId, Model.ProvinceList, "-- Chọn tỉnh/thành --", new { @class = "form-select" })
+                @Html.ValidationMessageFor(m => m.ProvinceId, "", new { @class = "text-danger small" })
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="DistrictId">Quận/Huyện <span class="text-danger">*</span></label>
+                @Html.DropDownListFor(m => m.DistrictId, Model.DistrictList, "-- Chọn quận/huyện --", new { @class = "form-select" })
+                @Html.ValidationMessageFor(m => m.DistrictId, "", new { @class = "text-danger small" })
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ===== 3. Giá và thông số ===== *@
+<div class="lf-card">
+    <div class="lf-card-head">
+        <span class="lf-ico"><i class="bi bi-cash-coin"></i></span>
+        <div><h6>Giá và thông số</h6><small>Giá, diện tích, số phòng, pháp lý và nội thất</small></div>
+    </div>
+    <div class="lf-card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="Price">Giá <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    @Html.TextBoxFor(m => m.Price, "{0:0.##}", new { @class = "form-control", inputmode = "decimal", placeholder = "VD: 3200000000" })
+                    <span class="input-group-text">VNĐ</span>
+                </div>
+                <div class="form-text">Tin cho thuê: nhập giá thuê mỗi tháng.</div>
+                @Html.ValidationMessageFor(m => m.Price, "", new { @class = "text-danger small" })
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="Area">Diện tích <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    @Html.TextBoxFor(m => m.Area, "{0:0.##}", new { @class = "form-control", inputmode = "decimal", placeholder = "VD: 69" })
+                    <span class="input-group-text">m²</span>
+                </div>
+                @Html.ValidationMessageFor(m => m.Area, "", new { @class = "text-danger small" })
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="Bedrooms">Số phòng ngủ</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-door-closed"></i></span>
+                    @Html.TextBoxFor(m => m.Bedrooms, new { @class = "form-control", type = "number", min = "0", max = "50" })
+                </div>
+                @Html.ValidationMessageFor(m => m.Bedrooms, "", new { @class = "text-danger small" })
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="Bathrooms">Số phòng vệ sinh</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-droplet"></i></span>
+                    @Html.TextBoxFor(m => m.Bathrooms, new { @class = "form-control", type = "number", min = "0", max = "50" })
+                </div>
+                @Html.ValidationMessageFor(m => m.Bathrooms, "", new { @class = "text-danger small" })
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="Floors">Số tầng</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-building"></i></span>
+                    @Html.TextBoxFor(m => m.Floors, new { @class = "form-control", type = "number", min = "0", max = "100" })
+                </div>
+                @Html.ValidationMessageFor(m => m.Floors, "", new { @class = "text-danger small" })
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="LegalStatusId">Giấy tờ pháp lý <span class="text-danger">*</span></label>
+                @Html.DropDownListFor(m => m.LegalStatusId, Model.LegalStatusList, "-- Chọn giấy tờ --", new { @class = "form-select" })
+                @Html.ValidationMessageFor(m => m.LegalStatusId, "", new { @class = "text-danger small" })
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="FurnitureStatusId">Tình trạng nội thất <span class="text-danger">*</span></label>
+                @Html.DropDownListFor(m => m.FurnitureStatusId, Model.FurnitureStatusList, "-- Chọn tình trạng --", new { @class = "form-select" })
+                @Html.ValidationMessageFor(m => m.FurnitureStatusId, "", new { @class = "text-danger small" })
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ===== 4. Tiện ích ===== *@
+<div class="lf-card">
+    <div class="lf-card-head">
+        <span class="lf-ico"><i class="bi bi-stars"></i></span>
+        <div><h6>Tiện ích</h6><small>Bấm để chọn các tiện ích có sẵn</small></div>
+    </div>
+    <div class="lf-card-body">
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var a in Model.AmenityList)
+            {
+                bool isChecked = Model.AmenityIds != null && Model.AmenityIds.Contains(a.AmenityId);
+                string chipId = "amenity_" + a.AmenityId;
+                <span class="lf-chip">
+                    <input type="checkbox" name="AmenityIds" value="@a.AmenityId" id="@chipId" @(isChecked ? "checked" : "") />
+                    <label for="@chipId"><i class="bi bi-check2"></i> @a.Name</label>
+                </span>
+            }
+        </div>
+    </div>
+</div>
+
+@* ===== 5. Mô tả ===== *@
+<div class="lf-card">
+    <div class="lf-card-head">
+        <span class="lf-ico"><i class="bi bi-journal-text"></i></span>
+        <div><h6>Mô tả chi tiết</h6><small>Giới thiệu vị trí, tiện ích xung quanh, tình trạng nhà</small></div>
+    </div>
+    <div class="lf-card-body">
+        @Html.TextAreaFor(m => m.Description, 6, 0, new { @class = "form-control", placeholder = "Mô tả chi tiết về bất động sản..." })
+        @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger small" })
+    </div>
+</div>
+
+@* ===== 6. Hình ảnh ===== *@
+<div class="lf-card">
+    <div class="lf-card-head">
+        <span class="lf-ico"><i class="bi bi-images"></i></span>
+        <div><h6>Hình ảnh</h6><small>Ảnh đầu tiên sẽ là ảnh đại diện (nếu tin chưa có ảnh)</small></div>
+    </div>
+    <div class="lf-card-body">
+        <input type="file" name="images" id="images" class="d-none" multiple accept=".jpg,.jpeg,.png,.webp" />
+        <label for="images" class="lf-drop" id="dropZone">
+            <i class="bi bi-cloud-arrow-up"></i>
+            <div class="fw-semibold mt-2" style="color:var(--navy)">Bấm để chọn ảnh hoặc kéo thả vào đây</div>
+            <div class="small text-muted">JPG, PNG, WEBP &middot; tối đa 5MB mỗi ảnh &middot; tối đa 20MB mỗi tin</div>
+            <div id="fileCount" class="small fw-semibold mt-1 text-brand"></div>
+        </label>
+        <div id="imagePreview" class="d-flex flex-wrap gap-2 mt-3"></div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        // 1) Dropdown quận/huyện phụ thuộc tỉnh/thành
+        var province = document.getElementById('ProvinceId');
+        var district = document.getElementById('DistrictId');
+        var districtUrl = '@Url.Action("Districts", "Listing")';
+
+        province.addEventListener('change', function () {
+            district.innerHTML = '<option value="">-- Chọn quận/huyện --</option>';
+            if (!province.value) return;
+
+            fetch(districtUrl + '?provinceId=' + encodeURIComponent(province.value))
+                .then(function (r) { return r.json(); })
+                .then(function (items) {
+                    items.forEach(function (d) {
+                        var opt = document.createElement('option');
+                        opt.value = d.id;
+                        opt.textContent = d.name;
+                        district.appendChild(opt);
+                    });
+                });
+        });
+
+        // 2) Chọn / kéo thả ảnh và xem trước
+        var input = document.getElementById('images');
+        var preview = document.getElementById('imagePreview');
+        var count = document.getElementById('fileCount');
+        var zone = document.getElementById('dropZone');
+
+        function render() {
+            preview.innerHTML = '';
+            var n = 0;
+            Array.prototype.forEach.call(input.files, function (f) {
+                if (!f.type.startsWith('image/')) return;
+                n++;
+                var img = document.createElement('img');
+                img.src = URL.createObjectURL(f);
+                img.className = 'lf-thumb';
+                preview.appendChild(img);
+            });
+            count.textContent = n > 0 ? 'Đã chọn ' + n + ' ảnh' : '';
+        }
+
+        input.addEventListener('change', render);
+
+        ['dragenter', 'dragover'].forEach(function (ev) {
+            zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add('is-over'); });
+        });
+        ['dragleave', 'drop'].forEach(function (ev) {
+            zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.remove('is-over'); });
+        });
+        zone.addEventListener('drop', function (e) {
+            if (e.dataTransfer && e.dataTransfer.files.length) {
+                input.files = e.dataTransfer.files;
+                render();
+            }
+        });
+    })();
+</script>
+
+<script>
+(function () {
+    // Dau thap phan ma server dang dung (tu dong theo cau hinh may)
+    var DEC = '@System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator';
+
+    // Dinh dang hien thi: 1.234.567 hoac 75,5 (dau phay la dau thap phan)
+    function fmt(raw, maxDec) {
+        var s = raw.replace(/[^\d,]/g, '');
+        var parts = s.split(',');
+        var intPart = parts[0].replace(/^0+(?=\d)/, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        if (maxDec > 0 && parts.length > 1)
+            return intPart + ',' + parts.slice(1).join('').substring(0, maxDec);
+        return intPart;
+    }
+
+    function bind(id, maxDec) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.setAttribute('inputmode', maxDec ? 'decimal' : 'numeric');
+
+        // Gia tri server do ra (vd 3200000000 hoac 75.5) -> hien thi co dau
+        function reformat() { el.value = fmt(el.value.split(DEC).join(','), maxDec); }
+        reformat();
+
+        // Phim "." / khoang trang: o Dien tich thi coi la dau thap phan, o Gia thi bo qua
+        el.addEventListener('keydown', function (e) {
+            if (e.key === '.' || e.key === ' ') {
+                e.preventDefault();
+                if (maxDec && el.value.indexOf(',') < 0 && el.value.length > 0 && e.key === '.') {
+                    el.setRangeText(',', el.selectionStart, el.selectionEnd, 'end');
+                    el.dispatchEvent(new Event('input'));
+                }
+            }
+        });
+
+        // Vua go vua them dau, giu nguyen vi tri con tro
+        el.addEventListener('input', function () {
+            var pos = el.selectionStart;
+            var digitsBefore = el.value.slice(0, pos).replace(/[^\d,]/g, '').length;
+            var out = fmt(el.value, maxDec);
+            el.value = out;
+            var n = 0, i = 0;
+            for (; i < out.length && n < digitsBefore; i++) if (/[\d,]/.test(out.charAt(i))) n++;
+            el.setSelectionRange(i, i);
+        });
+
+        // Truoc khi gui form: bo dau cham, doi dau phay ve dung dau thap phan cua server
+        if (el.form) {
+            el.form.addEventListener('submit', function () {
+                el.value = el.value.replace(/\./g, '').replace(/,$/, '').replace(',', DEC);
+                setTimeout(reformat, 0);   // neu form khong gui di thi hien lai co dau
+            });
+        }
+    }
+
+    bind('Price', 0);   // Gia: so nguyen
+    bind('Area', 2);    // Dien tich: cho phep toi da 2 so le, go dau phay (hoac dau cham) de nhap le
+})();
+</script>
